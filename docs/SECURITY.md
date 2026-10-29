@@ -28,7 +28,9 @@ Treat every change to data handling as a privacy change.
   referrer policy, camera, microphone and location blocked, and cross-origin window isolation.
 - **Offline support** caches a single static page (`public/offline.html`); no member page or data is
   ever stored by the service worker.
-- **Storage:** one private bucket, `vision`, limited to 5 MB JPEG, PNG or WebP files.
+- **Storage:** one private bucket, `vision`, limited to 5 MB JPEG, PNG or WebP files. Deleting a
+  picture or an account removes the files at once; a signed link that was already issued may be served
+  from Supabase's CDN cache until it expires (at most one hour).
 - **Place search** (`/api/places`, signed-in members only) sends only the typed text to Open-Meteo's
   free geocoding API; no identity, cookies or other data leave JournApp.
 

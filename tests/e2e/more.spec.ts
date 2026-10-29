@@ -104,6 +104,7 @@ test("premium videos are locked for free members; unknown videos are not found",
 });
 
 test("deleting an account also deletes its pictures", async ({ page }) => {
+  test.setTimeout(240_000);
   await signUpAndOnboard(page, "Faith", "delete-pics");
   await page.goto("/space/vision");
   await expect(page.getByRole("button", { name: "Add a picture" })).toBeEnabled();
@@ -118,9 +119,14 @@ test("deleting an account also deletes its pictures", async ({ page }) => {
   await page.getByRole("button", { name: "Delete everything" }).click();
   await expect(page).toHaveURL(/\/$/);
 
-  // The signed link pointed at a file that no longer exists.
-  const res = await page.request.get(src!);
-  expect(res.status()).toBeGreaterThanOrEqual(400);
+  // The signed link pointed at a file that no longer exists. Hosted Supabase's CDN can serve a cached
+  // copy for up to about a minute after a delete, so allow it time to purge.
+  await expect
+    .poll(async () => (await page.request.get(`${src}&nocache=${Date.now()}`)).status(), {
+      timeout: process.env.E2E_REMOTE ? 150_000 : 10_000,
+      intervals: [2_000, 5_000, 10_000],
+    })
+    .toBeGreaterThanOrEqual(400);
 });
 
 test("the install card shows on phones and stays dismissed", async ({ page }, info) => {
