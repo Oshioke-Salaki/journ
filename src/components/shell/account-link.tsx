@@ -1,4 +1,4 @@
-import { Settings } from "lucide-react";
+import { LayoutDashboard, Settings } from "lucide-react";
 import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -40,6 +40,36 @@ export async function AccountButton() {
   return (
     <Link href={routes.settings} aria-label="Settings" className="rounded-full active:scale-95">
       <Avatar name={profile?.display_name ?? null} className="size-8 text-[14px]" />
+    </Link>
+  );
+}
+
+/** Shown only to admins: the way into the admin dashboard from the sidebar. */
+export async function AdminSidebarLink() {
+  const profile = await getProfile();
+  if (profile?.role !== "admin") return null;
+  return (
+    <Link
+      href={routes.admin}
+      className="flex h-10 items-center gap-3 rounded-[12px] px-3 text-[15px] text-muted transition-colors hover:bg-raised hover:text-ink"
+    >
+      <LayoutDashboard className="size-[19px]" strokeWidth={1.6} aria-hidden />
+      Admin
+    </Link>
+  );
+}
+
+/** Shown only to admins: the admin dashboard from the phone's top bar. */
+export async function AdminHeaderLink() {
+  const profile = await getProfile();
+  if (profile?.role !== "admin") return null;
+  return (
+    <Link
+      href={routes.admin}
+      aria-label="Admin dashboard"
+      className="grid size-9 place-items-center rounded-full text-muted transition-colors hover:bg-raised hover:text-ink active:scale-95"
+    >
+      <LayoutDashboard className="size-5" strokeWidth={1.7} aria-hidden />
     </Link>
   );
 }

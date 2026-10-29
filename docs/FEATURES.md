@@ -103,7 +103,8 @@ From the sketch: My goals (set goals, check goals, my vision board), My plans, M
 ## Settings (`/settings`)
 
 Profile and optional details; goal prompts and reminder time; appearance (match device, light,
-dark); download my data (JSON); support; sign out; delete account (type DELETE). Admins see a link
+dark); change password (checks the current one first); download my data (JSON); support; sign out;
+delete account (type DELETE). Admins see a link
 to the admin area.
 
 ## Support (`/help`)

@@ -1,6 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const PORT = Number(process.env.E2E_PORT ?? 3100);
+const PORT = Number(process.env.E2E_PORT ?? 3197);
 /** Set E2E_BASE_URL to test a deployed site (with E2E_REMOTE=1 for the hosted database). */
 const remoteURL = process.env.E2E_BASE_URL;
 const baseURL = remoteURL ?? `http://localhost:${PORT}`;

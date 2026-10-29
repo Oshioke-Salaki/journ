@@ -95,7 +95,13 @@ test("admin: hidden from members, works for admins", async ({ page }) => {
   await page.goto("/admin");
   await expect(page.getByRole("heading", { name: "This page isn’t here" })).toBeVisible();
 
+  await page.goto("/today");
+  await expect(page.getByRole("link", { name: /^Admin/ })).toHaveCount(0);
+
   grantAdmin(email);
+  await page.goto("/today");
+  await page.getByRole("link", { name: /^Admin/ }).filter({ visible: true }).first().click();
+  await expect(page).toHaveURL(/\/admin$/);
   await page.goto("/admin");
   await expect(page.getByRole("heading", { name: "Overview", level: 1 })).toBeVisible();
   await expect(page.getByText(/no admin can read anyone's check-ins/)).toBeVisible();

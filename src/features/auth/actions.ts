@@ -6,11 +6,14 @@ import { fail, invalid, ok, UNEXPECTED_ERROR, type ActionResult } from "@/lib/re
 import { routes, safeNextPath } from "@/lib/routes";
 import { createClient } from "@/lib/supabase/server";
 import { authErrorMessage } from "./errors";
+import { requireUser } from "@/lib/auth/session";
 import {
+  changePasswordSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
   signInSchema,
   signUpSchema,
+  type ChangePasswordInput,
   type ForgotPasswordInput,
   type ResetPasswordInput,
   type SignInInput,
@@ -78,6 +81,26 @@ export async function updatePassword(input: ResetPasswordInput): Promise<ActionR
   const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
   if (error) return fail(authErrorMessage(error));
   return ok({ next: routes.today }, "Your password has been changed.");
+}
+
+/** Changes the password of the signed-in member, after checking their current one. */
+export async function changePassword(input: ChangePasswordInput): Promise<ActionResult> {
+  const parsed = changePasswordSchema.safeParse(input);
+  if (!parsed.success) return invalid(parsed.error);
+
+  const user = await requireUser();
+  if (!user.email) return fail("This account has no email address, so its password can't be changed here.");
+
+  const supabase = await createClient();
+  const { error: checkError } = await supabase.auth.signInWithPassword({ email: user.email, password: parsed.data.current });
+  if (checkError) {
+    if (checkError.code === "invalid_credentials") return fail("Check the highlighted fields.", { current: ["That isn't your current password."] });
+    return fail(authErrorMessage(checkError));
+  }
+
+  const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
+  if (error) return fail(authErrorMessage(error));
+  return ok(undefined, "Password changed");
 }
 
 /**

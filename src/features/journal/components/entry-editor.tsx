@@ -39,11 +39,15 @@ export function EntryEditor(props: Props) {
   const words = wordCount(body);
 
   // On every visit: start from the saved entry (or blank), then bring back any unsaved draft.
+  // Words already being typed are never reset; an untouched editor picks up the latest entry or prompt.
   useOnReveal(() => {
-    setTitle(isNew ? "" : props.initial.title);
-    setBody(isNew ? "" : props.initial.body);
-    if (isNew) setPromptId(props.initialPromptId);
-    setDirty(false);
+    if (dirty) return;
+    if (!isNew) {
+      setTitle(props.initial.title);
+      setBody(props.initial.body);
+    } else {
+      setPromptId(props.initialPromptId);
+    }
     const saved = draft.restore();
     if (!saved) return;
     const differs = isNew ? saved.body.trim() !== "" : saved.body !== props.initial.body || saved.title !== props.initial.title;
@@ -85,6 +89,9 @@ export function EntryEditor(props: Props) {
         if (!result.ok) return void notify.error(result.error);
         notify.success(result.message ?? "Saved");
         destination = routes.journalEntry(result.data.id);
+        // The next new entry starts blank, even though Next.js keeps this page alive.
+        setTitle("");
+        setBody("");
       } else {
         const result = await updateEntry(props.entryId, input);
         if (!result.ok) return void notify.error(result.error);

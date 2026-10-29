@@ -1,6 +1,37 @@
 import { expect, test } from "@playwright/test";
 import { expectToast, PASSWORD, signUpAndOnboard } from "./helpers";
 
+test("change password from settings", async ({ page }) => {
+  const { email } = await signUpAndOnboard(page, "Achieng", "password");
+  await page.goto("/settings");
+  const section = page.getByRole("region", { name: "Password" });
+
+  await section.getByLabel("Current password").fill("Not-my-password-1");
+  await section.getByLabel("New password", { exact: true }).fill("Brand-new-mornings-2026");
+  await section.getByLabel("Repeat new password").fill("Brand-new-mornings-2026");
+  await section.getByRole("button", { name: "Change password" }).click();
+  await expect(section.getByText("That isn't your current password.")).toBeVisible();
+
+  await section.getByLabel("Current password").fill(PASSWORD);
+  await section.getByRole("button", { name: "Change password" }).click();
+  await expectToast(page, "Password changed");
+  await expect(section.getByLabel("Current password")).toHaveValue("");
+
+  // Still signed in; then the new password works and the old one doesn't.
+  await page.goto("/today");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Achieng");
+  await page.context().clearCookies();
+  await page.goto("/sign-in");
+  await expect(page.getByRole("button", { name: "Sign in", exact: true })).toBeEnabled();
+  await page.getByLabel("Email").filter({ visible: true }).fill(email);
+  await page.getByLabel("Password", { exact: true }).filter({ visible: true }).fill(PASSWORD);
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await expectToast(page, "That email and password don't match");
+  await page.getByLabel("Password", { exact: true }).filter({ visible: true }).fill("Brand-new-mornings-2026");
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await expect(page).toHaveURL(/\/today/);
+});
+
 test("profile, preferences, theme, export and delete", async ({ page }) => {
   const { email } = await signUpAndOnboard(page, "Rael", "settings");
   await page.goto("/settings");

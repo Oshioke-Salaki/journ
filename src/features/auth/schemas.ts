@@ -33,6 +33,12 @@ export const resetPasswordSchema = z
   .object({ password: passwordSchema, confirm: z.string() })
   .refine((v) => v.password === v.confirm, { message: "The passwords don't match.", path: ["confirm"] });
 
+export const changePasswordSchema = z
+  .object({ current: z.string().min(1, "Enter your current password."), password: passwordSchema, confirm: z.string() })
+  .refine((v) => v.password === v.confirm, { message: "The passwords don't match.", path: ["confirm"] })
+  .refine((v) => v.password !== v.current, { message: "Choose a password different from your current one.", path: ["password"] });
+
+export type ChangePasswordInput = z.input<typeof changePasswordSchema>;
 export type SignUpInput = z.input<typeof signUpSchema>;
 export type SignInInput = z.input<typeof signInSchema>;
 export type ForgotPasswordInput = z.input<typeof forgotPasswordSchema>;

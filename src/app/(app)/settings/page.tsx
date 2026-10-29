@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { PageContainer, PageHeader } from "@/components/shell/page";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Appearance } from "@/features/settings/appearance";
+import { ChangePasswordForm } from "@/features/settings/change-password-form";
 import { DeleteAccountButton, DownloadDataButton, SignOutButton } from "@/features/settings/data-controls";
 import { PreferencesForm } from "@/features/settings/preferences-form";
 import { ProfileForm } from "@/features/settings/profile-form";
@@ -73,6 +74,9 @@ async function Settings() {
       </Section>
       <Section id="appearance" title="Appearance" description="Saved on this device.">
         <Appearance />
+      </Section>
+      <Section id="password" title="Password" description="Confirm your current password, then choose a new one. You stay signed in on this device.">
+        <ChangePasswordForm />
       </Section>
       <Section id="privacy" title="Your data" description="Everything you store in JournApp belongs to you. Take a copy at any time.">
         <div className="flex flex-col items-start gap-3">

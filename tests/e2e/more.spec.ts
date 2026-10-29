@@ -87,7 +87,11 @@ test("circle of control: move back and remove", async ({ page }) => {
 
   await page.getByRole("button", { name: "Move back to unsorted: Reply to the landlord" }).click();
   await expect(page.getByRole("group", { name: "Sort: Reply to the landlord" })).toBeVisible();
-  await page.getByRole("button", { name: "Remove: Reply to the landlord" }).click();
+  // Wait for the delete to reach the server: a reload cancels a request still in flight.
+  await Promise.all([
+    page.waitForResponse((r) => r.request().method() === "POST" && r.url().includes("/control")),
+    page.getByRole("button", { name: "Remove: Reply to the landlord" }).click(),
+  ]);
   await expect(page.getByText("Reply to the landlord").filter({ visible: true })).toHaveCount(0);
   await page.reload();
   await expect(page.getByText("Reply to the landlord").filter({ visible: true })).toHaveCount(0);

@@ -6,7 +6,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/cn";
 import { routes } from "@/lib/routes";
-import { AccountButton, AccountRow, AccountRowSkeleton } from "./account-link";
+import { AccountButton, AccountRow, AccountRowSkeleton, AdminHeaderLink, AdminSidebarLink } from "./account-link";
 import { SidebarNav, TabBar } from "./nav";
 
 /**
@@ -27,7 +27,12 @@ export function AppShell({ children }: { children: ReactNode }) {
         <Link href={routes.today} className="px-2" aria-label="JournApp, Today">
           <Wordmark />
         </Link>
-        <SidebarNav />
+        <div className="flex flex-col gap-0.5">
+          <SidebarNav />
+          <Suspense fallback={null}>
+            <AdminSidebarLink />
+          </Suspense>
+        </div>
         <Link href={routes.newJournalEntry} className={cn(buttonVariants({ variant: "primary", size: "md" }), "justify-start")}>
           <PenLine aria-hidden />
           Write
@@ -44,9 +49,14 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Link href={routes.today} aria-label="JournApp, Today">
             <Wordmark />
           </Link>
-          <Suspense fallback={<Skeleton className="size-8 rounded-full" />}>
-            <AccountButton />
-          </Suspense>
+          <div className="flex items-center gap-1">
+            <Suspense fallback={null}>
+              <AdminHeaderLink />
+            </Suspense>
+            <Suspense fallback={<Skeleton className="size-8 rounded-full" />}>
+              <AccountButton />
+            </Suspense>
+          </div>
         </header>
 
         <main

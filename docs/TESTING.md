@@ -13,7 +13,7 @@ Four layers, from fastest to most complete.
 
 ## End-to-end tests
 
-Prerequisites: `pnpm db:start` and `pnpm build`. Playwright starts `next start` on port 3100 (it reuses
+Prerequisites: `pnpm db:start` and `pnpm build`. Playwright starts `next start` on port 3197 (it reuses
 one already running). Every test signs up its own member, so tests run in parallel and never share
 state.
 

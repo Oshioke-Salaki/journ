@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { passwordSchema, resetPasswordSchema, signUpSchema } from "@/features/auth/schemas";
+import { changePasswordSchema, passwordSchema, resetPasswordSchema, signUpSchema } from "@/features/auth/schemas";
 import { checkInSchema } from "@/features/check-in/schemas";
 import { goalSchema } from "@/features/goals/schemas";
 import { entrySchema, wordCount } from "@/features/journal/schemas";
@@ -18,6 +18,14 @@ describe("validation", () => {
     expect(ok.email).toBe("amara@example.com");
     expect(ok.name).toBe("Amara");
     expect(signUpSchema.safeParse({ name: "A", email: "a@b.co", password: "Calm-mornings-2026", acceptTerms: false }).success).toBe(false);
+  });
+
+  it("checks a password change", () => {
+    const ok = { current: "12345678", password: "Calm-mornings-2026", confirm: "Calm-mornings-2026" };
+    expect(changePasswordSchema.safeParse(ok).success).toBe(true);
+    expect(changePasswordSchema.safeParse({ ...ok, confirm: "Calm-mornings-2027" }).success).toBe(false);
+    expect(changePasswordSchema.safeParse({ ...ok, current: "Calm-mornings-2026" }).success).toBe(false);
+    expect(changePasswordSchema.safeParse({ ...ok, password: "weak", confirm: "weak" }).success).toBe(false);
   });
 
   it("checks that new passwords match", () => {
