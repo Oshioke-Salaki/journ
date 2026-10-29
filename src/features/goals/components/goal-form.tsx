@@ -27,8 +27,7 @@ export function GoalForm() {
   const onSubmit = form.handleSubmit(
     (values) =>
       startTransition(async () => {
-        const clean = { ...values, steps: values.steps.filter((s) => s.title.trim()) };
-        const result = await createGoal(clean);
+        const result = await createGoal(values);
         if (!result.ok) {
           applyFieldErrors(form, result);
           return void notify.error(result.error);
@@ -54,6 +53,11 @@ export function GoalForm() {
           {steps.fields.map((field, i) => (
             <li key={field.id} className="flex items-start gap-2">
               <div className="grid flex-1 gap-2 sm:grid-cols-[1fr_170px]">
+                {form.formState.errors.steps?.[i]?.title ? (
+                  <p className="text-[13px] font-medium text-negative sm:col-span-2" role="alert">
+                    {form.formState.errors.steps[i]?.title?.message}
+                  </p>
+                ) : null}
                 <Input
                   aria-label={`Step ${i + 1}`}
                   placeholder={i === 0 ? "Lay out walking shoes the night before" : "Another step"}

@@ -20,7 +20,9 @@
     "db:test": "supabase test db",
     "db:types": "supabase gen types typescript --local > src/lib/supabase/database.types.ts",
     "admin:grant": "bash scripts/grant-admin.sh",
-    "icons": "node scripts/generate-icons.mjs"
+    "icons": "node scripts/generate-icons.mjs",
+    "db:push:auth": "bash scripts/push-auth-config.sh",
+    "test:e2e:live": "E2E_REMOTE=1 playwright test"
   },
   "dependencies": {
     "@hookform/resolvers": "^6.0.2",

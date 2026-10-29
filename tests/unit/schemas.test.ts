@@ -51,5 +51,8 @@ describe("validation", () => {
     expect(goalSchema.safeParse({ title: "", why: "", area: "body", targetDate: "", steps: [] }).success).toBe(false);
     expect(goalSchema.safeParse({ title: "Walk", why: "", area: "space", targetDate: "", steps: [] }).success).toBe(false);
     expect(goalSchema.parse({ title: "Walk", why: "", area: "body", targetDate: "", steps: [{ title: "Shoes", dueDate: "" }] }).steps[0].dueDate).toBeNull();
+    // A blank step row is ignored; a dated step needs a description.
+    expect(goalSchema.parse({ title: "Walk", why: "", area: "body", targetDate: "", steps: [{ title: " ", dueDate: "" }] }).steps).toEqual([]);
+    expect(goalSchema.safeParse({ title: "Walk", why: "", area: "body", targetDate: "", steps: [{ title: "", dueDate: "2026-11-02" }] }).success).toBe(false);
   });
 });

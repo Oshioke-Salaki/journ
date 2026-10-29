@@ -15,10 +15,15 @@ in JournApp's name and billing, and invite developers to it.
    ```
 3. Content: run `supabase/seed.sql` in the SQL editor for the sample content, or start empty and
    add content in the admin area.
-4. **Authentication → URL configuration:** Site URL `https://<your-domain>`; redirect URLs
-   `https://<your-domain>/**` (and the Vercel preview pattern, e.g. `https://*-<team>.vercel.app/**`).
-5. **Authentication → Providers → Email:** enable "Confirm email". Set the minimum password length to
-   8 with lowercase, uppercase and digits (matching the app).
+4. **Auth settings** (site URL, redirect URLs, password rules, email confirmation, rate limits) are
+   pushed from code, not clicked in the dashboard. Needs Owner or Admin on the organisation:
+   ```bash
+   SITE_URL=https://<your-domain> bash scripts/push-auth-config.sh                       # preview: no confirmation emails
+   SITE_URL=https://<your-domain> CONFIRM_EMAIL=true bash scripts/push-auth-config.sh    # once SMTP is connected
+   ```
+   It shows the exact diff and asks before pushing.
+5. Email confirmation stays **off** until SMTP is connected (step 7): Supabase's built-in email only
+   reaches the project team, so members could not confirm their accounts.
 6. **Email templates:** so links also work when opened on another device, point them at the
    token-hash route, for example for "Confirm signup":
    `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/onboarding`
@@ -65,6 +70,14 @@ in JournApp's name and billing, and invite developers to it.
 | Vercel | Non-commercial use | At public launch |
 | Mux | 10 stored videos | The 11th video |
 | Resend | 100 emails a day | More than about 100 daily reminder emails |
+
+## Current deployment
+
+| | |
+| --- | --- |
+| App | https://journ-lyart.vercel.app (Vercel project `journ`, team `oshiokesalakis-projects`, deploys on every push to `main`) |
+| Database | Supabase project `journal` (`xfdjqoxubbjxzxibtfvu`), eu-west-2 London |
+| Code | https://github.com/Oshioke-Salaki/journ |
 
 ## Local production check
 

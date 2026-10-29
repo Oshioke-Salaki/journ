@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Hanken_Grotesk, Newsreader } from "next/font/google";
+import { ServiceWorker } from "@/components/shell/service-worker";
 import { Toaster } from "@/components/ui/toaster";
 import { env } from "@/lib/env";
 import { themeScript } from "@/lib/theme";
@@ -56,6 +57,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-dvh">
         {children}
         <Toaster />
+        <ServiceWorker />
       </body>
     </html>
   );

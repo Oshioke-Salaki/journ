@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#ffffff" />
+<title>You're offline · JournApp</title>
+<style>
+  :root { --ground:#ffffff; --ink:#15302e; --muted:#4f5e5c; --primary:#1e4d4a; --on-primary:#fff; --raised:#f3efe8; }
+  @media (prefers-color-scheme: dark) { :root { --ground:#141a19; --ink:#f0f3f1; --muted:#b2bdba; --primary:#cfe8e1; --on-primary:#0d2220; --raised:#1a2120; } }
+  * { box-sizing: border-box; }
+  body { margin:0; min-height:100dvh; background:var(--ground); color:var(--ink); font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; display:flex; align-items:center; justify-content:center; padding: max(24px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom)); }
+  main { width:100%; max-width:440px; display:flex; flex-direction:column; gap:20px; }
+  svg.art { width:100%; height:auto; border-radius:22px; display:block; }
+  h1 { margin:8px 0 0; font-size:28px; line-height:1.15; letter-spacing:-0.02em; }
+  p { margin:0; font-size:17px; line-height:1.5; color:var(--muted); }
+  button { align-self:flex-start; height:48px; padding:0 24px; border:0; border-radius:999px; background:var(--primary); color:var(--on-primary); font:inherit; font-weight:600; font-size:16px; cursor:pointer; }
+</style>
+</head>
+<body>
+<main>
+  <svg class="art" viewBox="0 0 160 100" aria-hidden="true">
+    <rect width="160" height="100" fill="#E3DED6"/>
+    <circle cx="80" cy="50" r="8" fill="#5C6E6C"/>
+    <path d="M0 66 L34 50 L70 60 L114 44 L160 58 V100 H0 Z" fill="#C4C6D6"/>
+    <path d="M20 100 L74 64 L120 100 Z" fill="#A7AAC3"/>
+    <path d="M0 100 V72 L55 68 L95 100 Z" fill="#C9D9CF"/>
+    <path d="M60 100 L114 66 L160 80 V100 Z" fill="#93AA99"/>
+  </svg>
+  <h1>You're offline</h1>
+  <p>JournApp needs a connection to load this page. Anything you were writing is kept on this device and will be there when you're back.</p>
+  <button type="button" onclick="location.reload()">Try again</button>
+</main>
+</body>
+</html>

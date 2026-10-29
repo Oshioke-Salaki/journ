@@ -144,5 +144,9 @@ videos or prompts, and the admin lists. The screenshot run captures them on a fr
 ## Everywhere
 
 - Light and dark mode; phone, tablet and desktop layouts; installable as an app.
+- An offline screen for the installed app when there is no signal (member pages are never stored
+  on the device).
+- Link previews: sharing a JournApp link on WhatsApp, iMessage or social media shows a branded card.
+- Private pages are kept out of search engines (`robots.txt`); public pages are in the sitemap.
 - Skeletons while loading, empty states that say how to start, errors inside the block that failed,
   toasts for saves, optimistic updates that roll back on failure.

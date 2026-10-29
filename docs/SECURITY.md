@@ -24,6 +24,11 @@ Treat every change to data handling as a privacy change.
 - **Validation** with Zod on the client and again on the server for every action; database checks
   as the last line (lengths, ranges, enums).
 - **Logging** never includes journal text, notes or profile details.
+- **Security headers** on every response: HSTS, no framing (clickjacking), no MIME sniffing, a strict
+  referrer policy, camera, microphone and location blocked, and cross-origin window isolation.
+- **Offline support** caches a single static page (`public/offline.html`); no member page or data is
+  ever stored by the service worker.
+- **Storage:** one private bucket, `vision`, limited to 5 MB JPEG, PNG or WebP files.
 - **Place search** (`/api/places`, signed-in members only) sends only the typed text to Open-Meteo's
   free geocoding API; no identity, cookies or other data leave JournApp.
 

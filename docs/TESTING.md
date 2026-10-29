@@ -28,6 +28,18 @@ state.
 | `settings.spec.ts` | Profile, preferences, theme, data export contents, account deletion (and sign-in refused afterwards) |
 | `screens.spec.ts` | Screenshots of every screen in light and dark, plus axe accessibility checks (fails on serious or critical issues) |
 
+## Against the live site
+
+```bash
+E2E_BASE_URL=https://journ-lyart.vercel.app pnpm test:e2e:live
+bash scripts/remote-sql.sh "delete from auth.users where email like 'e2e-%@example.test'"   # clean up afterwards
+```
+
+Runs the same suite against the deployed app and the hosted database (raise the sign-up rate limit
+first with `SIGNUP_RATE=300` in `scripts/push-auth-config.sh`, and set it back afterwards). Admin tests
+grant admin to their own test account through `scripts/remote-sql.sh`; only `e2e-…@example.test`
+accounts can be promoted this way.
+
 ## Screenshots
 
 ```bash

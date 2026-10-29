@@ -18,4 +18,16 @@ $sql;
 select pass('done');
 select * from finish();
 SQL
-npx supabase test db --linked --workdir "$work" 2>&1 | tail -1
+# One call at a time: parallel CLI connections collide. Retry a transient failure.
+lock="${TMPDIR:-/tmp}/journapp-remote-sql.lock"
+until mkdir "$lock" 2>/dev/null; do sleep 1; done
+trap 'rm -rf "$work"; rmdir "$lock" 2>/dev/null || true' EXIT
+for attempt in 1 2 3; do
+  if out="$(npx supabase test db --linked --workdir "$work" 2>&1)" && grep -q "Result: PASS" <<<"$out"; then
+    echo "Result: PASS"
+    exit 0
+  fi
+  sleep $((attempt * 3))
+done
+echo "$out" | tail -5 >&2
+exit 1

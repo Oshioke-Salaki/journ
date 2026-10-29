@@ -86,6 +86,8 @@ test("support is reachable without signing in", async ({ page }) => {
 });
 
 test("admin: hidden from members, works for admins", async ({ page }) => {
+  // Granting admin on the hosted database goes through the Supabase CLI and takes ~20 s.
+  test.setTimeout(process.env.E2E_REMOTE ? 180_000 : 60_000);
   const { email } = await signUpAndOnboard(page, "Rael", "admin");
   const tag = Date.now().toString(36);
   const quote = `Small steps, taken daily, change a life (${tag}).`;

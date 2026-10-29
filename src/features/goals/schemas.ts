@@ -22,7 +22,15 @@ export const goalSchema = z.object({
     .nullable(),
   area: z.enum(GOAL_AREAS.map((a) => a.value) as [string, ...string[]]),
   targetDate: isoDate,
-  steps: z.array(stepSchema).max(30, "Up to 30 steps per goal."),
+  // Blank step rows in the form are ignored; a row with only a date asks for a description.
+  steps: z
+    .array(
+      z
+        .object({ title: z.string().trim().max(160, "Keep it under 160 characters."), dueDate: isoDate })
+        .refine((s) => s.title !== "" || !s.dueDate, { message: "Describe the step.", path: ["title"] }),
+    )
+    .max(30, "Up to 30 steps per goal.")
+    .transform((steps) => steps.filter((s) => s.title !== "")),
 });
 
 export const goalUpdateSchema = goalSchema.omit({ steps: true });
