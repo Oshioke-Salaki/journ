@@ -1,0 +1,274 @@
+@import "tailwindcss";
+
+/*
+ * JournApp design tokens.
+ *
+ * Colours are taken from the JournApp mark: deep teal, sand, peach, periwinkle, mint and sage.
+ * Roles, not colours, are used everywhere downstream (bg-surface, text-ink, ...). The brand hues
+ * (peach, periwinkle, mint, sage) belong to the mark and illustrations only; the interface itself
+ * runs on ink, sand tones and one data hue (accent). See docs/DESIGN.md.
+ */
+
+:root {
+  color-scheme: light;
+
+  --ground: #faf8f4;
+  --surface: #ffffff;
+  --raised: #f3efe8;
+  --sand: #ece3d5;
+  --active: #e9e3d9;
+  --border: #e6e0d6;
+  --rule: #efebe4;
+  --control: #cfc8bc;
+
+  --ink: #15302e;
+  --muted: #4f5e5c;
+  --faint: #5f6a68;
+
+  --primary: #1e4d4a;
+  --primary-hover: #173e3c;
+  --on-primary: #ffffff;
+
+  --accent: #2c7a72;
+  --accent-soft: #dcede8;
+  --accent-ink: #0f4a44;
+  --on-accent: #ffffff;
+
+  --peach: #f3cdae;
+  --periwinkle: #a9b3e0;
+  --mint: #b5dfcb;
+  --sage: #7fa68c;
+  --sun: #2f7370;
+
+  --positive: #247b50;
+  --negative: #b4232a;
+  --negative-soft: #fdecea;
+  --warning-ink: #8a3f0c;
+  --warning-soft: #fff6e3;
+
+  --focus: #2c7a72;
+  --overlay: rgb(21 48 46 / 0.32);
+  --shadow-float: 0 12px 32px rgb(21 48 46 / 0.12), 0 2px 6px rgb(21 48 46 / 0.06);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #0d1111;
+    --surface: #141a19;
+    --raised: #1a2120;
+    --sand: #222a28;
+    --active: #25302e;
+    --border: #27312f;
+    --rule: #1f2826;
+    --control: #3c4947;
+
+    --ink: #f0f3f1;
+    --muted: #b2bdba;
+    --faint: #96a39f;
+
+    --primary: #cfe8e1;
+    --primary-hover: #e2f2ed;
+    --on-primary: #0d2220;
+
+    --accent: #6cc2b4;
+    --accent-soft: #1c3431;
+    --accent-ink: #a9e3d8;
+    --on-accent: #0d2220;
+
+    --positive: #4cc38a;
+    --negative: #f0737a;
+    --negative-soft: #3a1d20;
+    --warning-ink: #f4c58a;
+    --warning-soft: #33271a;
+
+    --focus: #6cc2b4;
+    --overlay: rgb(0 0 0 / 0.55);
+    --shadow-float: 0 16px 40px rgb(0 0 0 / 0.5), 0 2px 8px rgb(0 0 0 / 0.3);
+  }
+}
+
+:root[data-theme="dark"] {
+  --ground: #0d1111;
+  --surface: #141a19;
+  --raised: #1a2120;
+  --sand: #222a28;
+  --active: #25302e;
+  --border: #27312f;
+  --rule: #1f2826;
+  --control: #3c4947;
+
+  --ink: #f0f3f1;
+  --muted: #b2bdba;
+  --faint: #96a39f;
+
+  --primary: #cfe8e1;
+  --primary-hover: #e2f2ed;
+  --on-primary: #0d2220;
+
+  --accent: #6cc2b4;
+  --accent-soft: #1c3431;
+  --accent-ink: #a9e3d8;
+  --on-accent: #0d2220;
+
+  --positive: #4cc38a;
+  --negative: #f0737a;
+  --negative-soft: #3a1d20;
+  --warning-ink: #f4c58a;
+  --warning-soft: #33271a;
+
+  --focus: #6cc2b4;
+  --overlay: rgb(0 0 0 / 0.55);
+  --shadow-float: 0 16px 40px rgb(0 0 0 / 0.5), 0 2px 8px rgb(0 0 0 / 0.3);
+}
+
+@theme inline {
+  --color-ground: var(--ground);
+  --color-surface: var(--surface);
+  --color-raised: var(--raised);
+  --color-sand: var(--sand);
+  --color-active: var(--active);
+  --color-border: var(--border);
+  --color-rule: var(--rule);
+  --color-control: var(--control);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-on-primary: var(--on-primary);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-ink: var(--accent-ink);
+  --color-on-accent: var(--on-accent);
+  --color-peach: var(--peach);
+  --color-periwinkle: var(--periwinkle);
+  --color-mint: var(--mint);
+  --color-sage: var(--sage);
+  --color-sun: var(--sun);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --color-negative-soft: var(--negative-soft);
+  --color-warning-ink: var(--warning-ink);
+  --color-warning-soft: var(--warning-soft);
+  --color-focus: var(--focus);
+  --color-overlay: var(--overlay);
+
+  --font-sans: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-newsreader), ui-serif, Georgia, serif;
+
+  --shadow-float: var(--shadow-float);
+
+  --radius-panel: 22px;
+  --radius-card: 16px;
+  --radius-field: 14px;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01" on;
+    line-height: 1.5;
+  }
+
+  ::selection {
+    background: var(--accent-soft);
+    color: var(--ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  input,
+  textarea,
+  select,
+  button {
+    font: inherit;
+  }
+
+  /* Numbers that update or line up use tabular figures. */
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer utilities {
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pl-safe {
+    padding-left: env(safe-area-inset-left);
+  }
+  .pr-safe {
+    padding-right: env(safe-area-inset-right);
+  }
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+  .text-pretty {
+    text-wrap: pretty;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes sheet-in {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes dialog-in {
+  from { opacity: 0; transform: translate(-50%, calc(-50% + 8px)) scale(0.98); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
