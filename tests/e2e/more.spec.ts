@@ -87,14 +87,17 @@ test("circle of control: move back and remove", async ({ page }) => {
 
   await page.getByRole("button", { name: "Move back to unsorted: Reply to the landlord" }).click();
   await expect(page.getByRole("group", { name: "Sort: Reply to the landlord" })).toBeVisible();
-  // Wait for the delete to reach the server: a reload cancels a request still in flight.
-  await Promise.all([
-    page.waitForResponse((r) => r.request().method() === "POST" && r.url().includes("/control")),
-    page.getByRole("button", { name: "Remove: Reply to the landlord" }).click(),
-  ]);
+  await page.getByRole("button", { name: "Remove: Reply to the landlord" }).click();
   await expect(page.getByText("Reply to the landlord").filter({ visible: true })).toHaveCount(0);
-  await page.reload();
-  await expect(page.getByText("Reply to the landlord").filter({ visible: true })).toHaveCount(0);
+  // The server confirms it: reload until the delete (queued behind the earlier move) has landed.
+  await page.waitForTimeout(1_500);
+  await expect
+    .poll(async () => {
+      await page.reload();
+      await expect(page.getByRole("heading", { name: "What can I control?", level: 1 })).toBeVisible();
+      return page.getByText("Reply to the landlord").filter({ visible: true }).count();
+    }, { timeout: 20_000, intervals: [1_000, 2_000, 3_000] })
+    .toBe(0);
 });
 
 test("premium videos are locked for free members; unknown videos are not found", async ({ page }) => {
