@@ -1,7 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const PORT = Number(process.env.E2E_PORT ?? 3100);
-const baseURL = `http://localhost:${PORT}`;
+/** Set E2E_BASE_URL to test a deployed site (with E2E_REMOTE=1 for the hosted database). */
+const remoteURL = process.env.E2E_BASE_URL;
+const baseURL = remoteURL ?? `http://localhost:${PORT}`;
 
 /**
  * End-to-end tests run against a production build and the local Supabase stack
@@ -28,10 +30,12 @@ export default defineConfig({
     { name: "iphone", use: { ...devices["iPhone 15"], browserName: "chromium", channel: "chrome" } },
     { name: "ipad", use: { ...devices["iPad (gen 7)"], browserName: "chromium", channel: "chrome" } },
   ],
-  webServer: {
-    command: `pnpm start -p ${PORT}`,
-    url: baseURL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 60_000,
-  },
+  webServer: remoteURL
+    ? undefined
+    : {
+        command: `pnpm start -p ${PORT}`,
+        url: baseURL,
+        reuseExistingServer: !process.env.CI,
+        timeout: 60_000,
+      },
 });

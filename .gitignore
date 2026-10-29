@@ -52,3 +52,6 @@ next-env.d.ts
 # local tooling
 /.claude
 /.taste-skill
+
+# Production auth config (generated per deploy, contains the live URLs)
+/supabase/production

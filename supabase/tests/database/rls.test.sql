@@ -3,6 +3,9 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
+-- The hosted CLI connects with a login role; act as postgres (as local tests do).
+set local role postgres;
+set local search_path to public, extensions;
 
 select plan(28);
 
@@ -81,7 +84,7 @@ select is((select count(*)::int from public.goals), 1, 'another member could not
 
 select lives_ok($$ select public.delete_my_account() $$, 'a member can delete their own account');
 
-reset role;
+set local role postgres;
 select is(
   (select count(*)::int from public.journal_entries where user_id = '11111111-1111-1111-1111-111111111111'),
   0, 'deleting the account removes everything the member stored');

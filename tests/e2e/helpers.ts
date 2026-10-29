@@ -45,9 +45,14 @@ export async function expectToast(page: Page, text: string | RegExp) {
   await expect(page.locator("[data-sonner-toast]").filter({ hasText: text }).first()).toBeVisible();
 }
 
-/** Promotes a member to admin in the local database (tests only). */
+/** Promotes a test member to admin: in the local database, or the hosted one when E2E_REMOTE=1. */
 export function grantAdmin(email: string) {
-  execSync(`bash scripts/grant-admin.sh ${email}`, { stdio: "pipe" });
+  if (!/^e2e-[a-z0-9-]+@example\.test$/.test(email)) throw new Error("Only test accounts can be made admin");
+  if (process.env.E2E_REMOTE) {
+    execSync(`bash scripts/remote-sql.sh "update public.profiles set role = 'admin' where id = (select id from auth.users where email = '${email}')"`, { stdio: "pipe" });
+  } else {
+    execSync(`bash scripts/grant-admin.sh ${email}`, { stdio: "pipe" });
+  }
 }
 
 /** A valid 64x48 PNG (a teal field) for upload tests, built with zlib so it always decodes. */

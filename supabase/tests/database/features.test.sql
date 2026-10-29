@@ -2,6 +2,9 @@
 
 begin;
 create extension if not exists pgtap with schema extensions;
+-- The hosted CLI connects with a login role; act as postgres (as local tests do).
+set local role postgres;
+set local search_path to public, extensions;
 select plan(12);
 
 insert into auth.users (id, email, raw_user_meta_data, aud, role) values
@@ -30,7 +33,7 @@ select is((select count(*)::int from public.control_items), 0, 'another member s
 select is((select count(*)::int from public.vision_items), 0, 'another member sees none of the vision board');
 select is((select count(*)::int from storage.objects where bucket_id = 'vision'), 0, 'another member sees none of the stored pictures');
 
-reset role;
+set local role postgres;
 update public.profiles set role = 'admin' where id = '44444444-4444-4444-4444-444444444444';
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"44444444-4444-4444-4444-444444444444","role":"authenticated"}', true);
