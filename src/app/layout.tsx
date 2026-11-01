@@ -3,7 +3,7 @@ import { Caveat, Courier_Prime, Hanken_Grotesk, Newsreader } from "next/font/goo
 import { ServiceWorker } from "@/components/shell/service-worker";
 import { Toaster } from "@/components/ui/toaster";
 import { AppLock } from "@/features/lock/app-lock";
-import { lockScript } from "@/lib/app-lock";
+import { lockScript, lockStyle } from "@/lib/app-lock";
 import { env } from "@/lib/env";
 import { themeScript } from "@/lib/theme";
 import "./globals.css";
@@ -58,6 +58,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${hanken.variable} ${newsreader.variable} ${caveat.variable} ${courier.variable} antialiased`} suppressHydrationWarning>
       <head>
+        <style dangerouslySetInnerHTML={{ __html: lockStyle }} />
         <script dangerouslySetInnerHTML={{ __html: themeScript + lockScript }} />
       </head>
       <body className="min-h-dvh">

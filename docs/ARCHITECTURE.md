@@ -77,7 +77,8 @@ Browser ◀──(RSC stream)──── app/.../page.tsx ◀── features/x/
   an authenticator; `requireUser` then sends them to `/verify` (`features/auth/mfa-actions.ts`).
   Postgres enforces the same rule with restrictive policies, so the redirect is a convenience.
 - App lock (`lib/app-lock.ts`, `features/lock`): a script in `<head>` (next to the theme script) marks
-  `<html data-locked>` before first paint, CSS hides everything but the lock screen, and `AppLock`
+  `<html data-locked>` before first paint, an inline `<style>` (not globals.css, whose production
+  build dropped the rule) hides everything but the lock screen, and `AppLock`
   in the root layout asks for the code and re-locks after the chosen time away.
 
 ## Rendering, caching and speed

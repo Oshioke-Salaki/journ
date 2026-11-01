@@ -17,6 +17,12 @@ export const LOCK_AFTER = [
 
 export type LockConfig = { salt: string; hash: string; minutes: number };
 
+/**
+ * Hides everything but the lock screen while locked. Inlined in <head> with the script (not in
+ * globals.css), so no CSS build step can drop or reorder it.
+ */
+export const lockStyle = "html[data-locked] body>:not([data-app-lock]){visibility:hidden!important}";
+
 /** Runs before first paint (inlined in <head>): hides the app at once if it should be locked. */
 export const lockScript = `(function(){try{var c=JSON.parse(localStorage.getItem("${LOCK_KEY}")||"null");if(!c)return;var a=Number(sessionStorage.getItem("${ACTIVE_KEY}")||0);if(!a||Date.now()-a>c.minutes*60000){document.documentElement.setAttribute("data-locked","")}}catch(e){}})();`;
 
