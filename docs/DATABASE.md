@@ -10,7 +10,7 @@ only way the schema changes: never edit a production database by hand.
 | `profiles` | One row per member: name, optional birth date, time and place (with latitude, longitude, timezone and country from the place search), country, language, pronouns, timezone, consent flags, reminder time, `role` (member/admin), `plan` (free/premium) | Member (role and plan are not writable by members) |
 | `check_ins` | One per member per local day: mood 1–5, energy, efficiency, self-satisfaction, body notes (JSON `[{area, sensation}]`), feeling words, note | Member |
 | `tracker_entries` | Water, sleep, movement, nutrition, stillness, per day | Member |
-| `journal_entries` | Free and prompted entries; a prompted entry keeps a copy of its prompt | Member |
+| `journal_entries` | Free and prompted entries; a prompted entry keeps a copy of its prompt. `body_doc` holds the formatted document (sanitised ProseMirror JSON); `body` its plain text for search, previews and word counts | Member |
 | `goals`, `goal_steps` | Goals with status (active, paused, achieved) and ordered steps; dated steps are "My plans" | Member |
 | `control_items` | Circle of control: thoughts sorted into control, influence, outside; may link to a goal step | Member |
 | `vision_items` | Vision board: words, or a picture stored in the private `vision` bucket | Member |

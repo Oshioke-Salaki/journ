@@ -49,6 +49,26 @@
   --focus: #2c7a72;
   --overlay: rgb(21 48 46 / 0.32);
   --shadow-float: 0 12px 32px rgb(21 48 46 / 0.12), 0 2px 6px rgb(21 48 46 / 0.06);
+
+  /* Journal writing palette (see features/journal/rich/palette.ts). */
+  --jf-serif: var(--font-newsreader), Georgia, serif;
+  --jf-sans: var(--font-hanken), system-ui, sans-serif;
+  --jf-hand: var(--font-caveat), "Bradley Hand", cursive;
+  --jf-type: var(--font-courier), "Courier New", monospace;
+  --js-small: 0.84em;
+  --js-large: 1.26em;
+  --js-xl: 1.6em;
+  --jc-teal: #1f6f68;
+  --jc-sage: #4d7a5c;
+  --jc-blue: #3f55a6;
+  --jc-rose: #a23d57;
+  --jc-amber: #9a5a12;
+  --jc-muted: #6b7372;
+  --jh-yellow: #fbe7a1;
+  --jh-peach: #f8d3bd;
+  --jh-mint: #cfeedd;
+  --jh-blue: #d9def6;
+  --jh-rose: #f6d3dc;
 }
 
 :root[data-theme="dark"] {
@@ -94,6 +114,18 @@
     --focus: #6cc2b4;
     --overlay: rgb(0 0 0 / 0.55);
     --shadow-float: 0 16px 40px rgb(0 0 0 / 0.5), 0 2px 8px rgb(0 0 0 / 0.3);
+
+    --jc-teal: #7fd0c4;
+    --jc-sage: #9cc9a8;
+    --jc-blue: #a9b6ef;
+    --jc-rose: #f2a3b6;
+    --jc-amber: #f0c07e;
+    --jc-muted: #9aa6a3;
+    --jh-yellow: #5a4b1c;
+    --jh-peach: #5a3a2b;
+    --jh-mint: #234736;
+    --jh-blue: #2d3560;
+    --jh-rose: #5a2a37;
   }
 }
 
@@ -129,6 +161,18 @@
   --focus: #6cc2b4;
   --overlay: rgb(0 0 0 / 0.55);
   --shadow-float: 0 16px 40px rgb(0 0 0 / 0.5), 0 2px 8px rgb(0 0 0 / 0.3);
+
+  --jc-teal: #7fd0c4;
+  --jc-sage: #9cc9a8;
+  --jc-blue: #a9b6ef;
+  --jc-rose: #f2a3b6;
+  --jc-amber: #f0c07e;
+  --jc-muted: #9aa6a3;
+  --jh-yellow: #5a4b1c;
+  --jh-peach: #5a3a2b;
+  --jh-mint: #234736;
+  --jh-blue: #2d3560;
+  --jh-rose: #5a2a37;
 }
 
 @theme inline {
@@ -271,4 +315,45 @@
 @keyframes rise-in {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Journal documents: the editor and the read view share these styles. */
+.journal-doc {
+  font-family: var(--jf-serif);
+  font-size: 19px;
+  line-height: 1.7;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+@media (min-width: 640px) {
+  .journal-doc { font-size: 21px; }
+}
+.journal-doc > * + * { margin-top: 0.7em; }
+.journal-doc h2 { font-size: 1.5em; line-height: 1.2; font-weight: 600; letter-spacing: -0.015em; margin-top: 1.1em; }
+.journal-doc h3 { font-size: 1.2em; line-height: 1.3; font-weight: 600; margin-top: 1em; }
+.journal-doc ul, .journal-doc ol { padding-left: 1.4em; }
+.journal-doc ul { list-style: disc; }
+.journal-doc ol { list-style: decimal; }
+.journal-doc li + li { margin-top: 0.25em; }
+.journal-doc li > p { margin: 0; }
+.journal-doc li::marker { color: var(--accent); }
+.journal-doc blockquote { border-left: 3px solid var(--accent); padding: 0.1em 0 0.1em 1em; color: var(--muted); font-style: italic; }
+.journal-doc hr { border: 0; height: 1px; background: var(--border); margin: 1.6em 0; }
+.journal-doc mark { border-radius: 0.2em; padding: 0.04em 0.12em; box-decoration-break: clone; -webkit-box-decoration-break: clone; color: inherit; }
+.journal-doc mark:not([data-color]):not([style*="background"]) { background: var(--jh-yellow); }
+.journal-doc ul[data-type="taskList"] { list-style: none; padding-left: 0.2em; }
+.journal-doc ul[data-type="taskList"] li { display: flex; align-items: flex-start; gap: 0.6em; }
+.journal-doc ul[data-type="taskList"] li > label { flex: none; margin-top: 0.32em; user-select: none; }
+.journal-doc ul[data-type="taskList"] li > div { flex: 1; min-width: 0; }
+.journal-doc ul[data-type="taskList"] li[data-checked="true"] > div { color: var(--muted); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--muted) 60%, transparent); }
+.journal-doc input[type="checkbox"] { appearance: none; width: 1.05em; height: 1.05em; border: 1.5px solid var(--control); border-radius: 0.3em; background: var(--surface); display: grid; place-items: center; cursor: pointer; }
+.journal-doc input[type="checkbox"]:checked { background: var(--positive); border-color: var(--positive); }
+.journal-doc input[type="checkbox"]:checked::after { content: ""; width: 0.32em; height: 0.58em; border: solid #fff; border-width: 0 0.14em 0.14em 0; transform: translateY(-0.06em) rotate(45deg); }
+.journal-doc .is-editor-empty:first-child::before { content: attr(data-placeholder); color: color-mix(in srgb, var(--faint) 75%, transparent); float: left; height: 0; pointer-events: none; }
+.journal-doc:focus { outline: none; }
+.journal-doc ::selection { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(4px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }

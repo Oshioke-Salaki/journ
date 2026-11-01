@@ -49,8 +49,9 @@ describe("validation", () => {
   });
 
   it("validates journal entries and counts words", () => {
-    expect(entrySchema.safeParse({ title: "", body: "   ", promptId: null }).success).toBe(false);
-    expect(entrySchema.parse({ title: "", body: "Hello", promptId: null }).title).toBeNull();
+    expect(entrySchema.parse({ title: "", doc: { type: "doc" }, promptId: null }).title).toBeNull();
+    expect(entrySchema.safeParse({ title: "x".repeat(121), doc: { type: "doc" }, promptId: null }).success).toBe(false);
+    expect(entrySchema.safeParse({ title: "", doc: { type: "doc" }, promptId: "not-a-uuid" }).success).toBe(false);
     expect(wordCount("  one two\nthree  ")).toBe(3);
     expect(wordCount("")).toBe(0);
   });

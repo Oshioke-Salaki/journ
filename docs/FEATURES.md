@@ -59,6 +59,13 @@ shows a gentle link to support.
 From "Free journaling: free writing, prompted writing".
 
 - Full-screen editor in a serif face; title optional; word count; shuffle or drop the prompt.
+- **Writing tools:** text style (body, heading, subheading, quote); fonts (serif, sans, handwritten,
+  typewriter: the selection, or the whole entry when nothing is selected); four text sizes; bold,
+  italic, underline, strikethrough; seven text colours and five highlighters, all readable in light
+  and dark; bulleted, numbered and tickable checklists; divider; alignment; clear formatting; undo
+  and redo. A floating toolbar on larger screens, docked above the keyboard on phones, and a quick
+  menu on selected text. Shortcuts: Cmd/Ctrl+B, I, U, Z; typing `# `, `- `, `1. `, `[] `, `> ` or
+  `---` starts a heading, list, checklist, quote or divider.
 - Drafts are kept on the device as you type and restored if the tab closes; Cmd/Ctrl+S saves; a
   warning appears before leaving with unsaved words. Drafts are per member and cleared on sign-out.
 - List grouped by month, search as you type, a reading view, edit and delete (with confirmation).

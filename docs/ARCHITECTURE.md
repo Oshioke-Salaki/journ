@@ -88,6 +88,13 @@ Next.js 16 with **Cache Components** and **Partial Prefetching**:
 - Next.js keeps recently visited pages alive (React Activity) so going back is instant. One-off flows
   reset when shown again with `useOnReveal` (`lib/use-on-reveal.ts`).
 
+## Rich text
+
+Journal entries use Tiptap 3 (ProseMirror). `features/journal/rich/` holds the shared schema
+(`extensions.ts`), the palette (`palette.ts`), the server-side sanitiser and plain-text conversion
+(`document.ts`), the editor and toolbar (client), and the read view, which renders the stored JSON on
+the server with Tiptap's static renderer, so reading an entry ships no editor code.
+
 ## Time and "today"
 
 A member's day is their own calendar day in the timezone saved on their profile (captured from the

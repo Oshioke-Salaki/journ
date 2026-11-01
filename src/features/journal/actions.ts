@@ -7,7 +7,22 @@ import { requireMember } from "@/lib/auth/session";
 import { fail, invalid, ok, UNEXPECTED_ERROR, type ActionResult } from "@/lib/result";
 import { routes } from "@/lib/routes";
 import { createClient } from "@/lib/supabase/server";
+import type { Json } from "@/lib/supabase/database.types";
+import { docToText, InvalidDocument, sanitizeDoc, type DocNode } from "./rich/document";
 import { entrySchema, type EntryInput } from "./schemas";
+
+/** Sanitises the document and derives the plain text from it (never trusting a client copy). */
+function prepare(rawDoc: unknown): { doc: DocNode; body: string } | { error: string } {
+  try {
+    const doc = sanitizeDoc(rawDoc);
+    const body = docToText(doc);
+    if (!body.trim()) return { error: "Write something before saving." };
+    return { doc, body };
+  } catch (error) {
+    if (error instanceof InvalidDocument) return { error: error.message === "Entry too long" ? "This entry is too long to save." : "This entry couldn't be read. Please try again." };
+    throw error;
+  }
+}
 
 const id = z.uuid();
 
@@ -22,6 +37,9 @@ export async function createEntry(input: EntryInput): Promise<ActionResult<{ id:
   const parsed = entrySchema.safeParse(input);
   if (!parsed.success) return invalid(parsed.error);
 
+  const prepared = prepare(parsed.data.doc);
+  if ("error" in prepared) return fail(prepared.error, { body: [prepared.error] });
+
   const { user, today } = await requireMember();
   const prompt = parsed.data.promptId ? await getPrompt(parsed.data.promptId) : null;
 
@@ -34,7 +52,8 @@ export async function createEntry(input: EntryInput): Promise<ActionResult<{ id:
       prompt_id: prompt?.id ?? null,
       prompt_body: prompt?.body ?? null,
       title: parsed.data.title,
-      body: parsed.data.body,
+      body: prepared.body,
+      body_doc: prepared.doc as unknown as Json,
       local_date: today,
     })
     .select("id")
@@ -52,11 +71,14 @@ export async function updateEntry(entryId: string, input: EntryInput): Promise<A
   const parsed = entrySchema.safeParse(input);
   if (!parsed.success) return invalid(parsed.error);
 
+  const prepared = prepare(parsed.data.doc);
+  if ("error" in prepared) return fail(prepared.error, { body: [prepared.error] });
+
   await requireMember();
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("journal_entries")
-    .update({ title: parsed.data.title, body: parsed.data.body })
+    .update({ title: parsed.data.title, body: prepared.body, body_doc: prepared.doc as unknown as Json })
     .eq("id", entryId)
     .select("id");
   if (error) {

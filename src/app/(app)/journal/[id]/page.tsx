@@ -9,6 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DeleteEntryButton } from "@/features/journal/components/delete-entry-button";
 import { getEntry } from "@/features/journal/queries";
 import { wordCount } from "@/features/journal/schemas";
+import type { DocNode } from "@/features/journal/rich/document";
+import { JournalDocument } from "@/features/journal/rich/read-view";
 import { requireMember } from "@/lib/auth/session";
 import { formatDate } from "@/lib/dates";
 import { cn } from "@/lib/cn";
@@ -48,7 +50,9 @@ async function Entry({ params }: Pick<PageProps<"/journal/[id]">, "params">) {
       {entry.prompt_body ? (
         <p className="mt-6 rounded-[18px] bg-sand px-5 py-4 font-serif text-[18px] leading-snug text-ink italic">{entry.prompt_body}</p>
       ) : null}
-      <div className="mt-8 font-serif text-[19px] leading-[1.75] whitespace-pre-wrap text-ink sm:text-[20px]">{entry.body}</div>
+      <div className="mt-8">
+        <JournalDocument doc={entry.body_doc as DocNode | null} text={entry.body} />
+      </div>
       <div className="mt-12 flex items-center gap-2 border-t border-rule pt-6">
         <Link href={`${routes.journalEntry(entry.id)}/edit`} className={buttonVariants({ variant: "secondary", size: "sm" })}>
           <Pencil aria-hidden />

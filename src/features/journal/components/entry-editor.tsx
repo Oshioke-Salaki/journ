@@ -1,15 +1,18 @@
 "use client";
 
+import type { Editor } from "@tiptap/react";
 import { ArrowLeft, Shuffle, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { notify } from "@/lib/notify";
 import { routes } from "@/lib/routes";
 import { useOnReveal } from "@/lib/use-on-reveal";
 import { createEntry, updateEntry } from "../actions";
+import { textToDoc, type DocNode } from "../rich/document";
+import { RichEditor } from "../rich/rich-editor";
 import { wordCount } from "../schemas";
 import { useDraft } from "./use-draft";
 
@@ -17,8 +20,10 @@ type Prompt = { id: string; body: string };
 
 type Props = { userId: string } & (
   | { mode: "new"; prompts: Prompt[]; initialPromptId: string | null; placeholder?: string }
-  | { mode: "edit"; entryId: string; initial: { title: string; body: string }; promptBody: string | null; prompts?: never }
+  | { mode: "edit"; entryId: string; initial: { title: string; doc: DocNode; text: string }; promptBody: string | null; prompts?: never }
 );
+
+const EMPTY: DocNode = { type: "doc", content: [{ type: "paragraph" }] };
 
 export function EntryEditor(props: Props) {
   const router = useRouter();
@@ -26,46 +31,55 @@ export function EntryEditor(props: Props) {
   const isNew = props.mode === "new";
   // Drafts are per member, so two people sharing a device never see each other's words.
   const draftKey = `${props.userId}:${isNew ? "new" : props.entryId}`;
+  const startDoc = isNew ? EMPTY : props.initial.doc;
+  const startText = isNew ? "" : props.initial.text;
 
   const [title, setTitle] = useState(isNew ? "" : props.initial.title);
-  const [body, setBody] = useState(isNew ? "" : props.initial.body);
+  const [doc, setDoc] = useState<DocNode>(startDoc);
+  const [text, setText] = useState(startText);
   const [promptId, setPromptId] = useState<string | null>(isNew ? props.initialPromptId : null);
   const [dirty, setDirty] = useState(false);
-  const bodyRef = useRef<HTMLTextAreaElement>(null);
 
-  const draft = useDraft(draftKey, { title, body, promptId }, dirty);
+  // The editor appears after the first render; content chosen before then is applied when it does.
+  const editorRef = useRef<Editor | null>(null);
+  const wantedDoc = useRef<DocNode>(startDoc);
+  const load = (next: DocNode, nextText: string) => {
+    wantedDoc.current = next;
+    setDoc(next);
+    setText(nextText);
+    editorRef.current?.commands.setContent(next, { emitUpdate: false });
+  };
+  const onReady = useCallback((editor: Editor) => {
+    editorRef.current = editor;
+    if (JSON.stringify(editor.getJSON()) !== JSON.stringify(wantedDoc.current)) editor.commands.setContent(wantedDoc.current, { emitUpdate: false });
+  }, []);
+
+  const draft = useDraft(draftKey, { title, body: text, doc, promptId }, dirty);
   const prompt = isNew ? props.prompts.find((p) => p.id === promptId) ?? null : null;
   const promptText = isNew ? prompt?.body ?? null : props.promptBody;
-  const words = wordCount(body);
+  const words = wordCount(text);
 
   // On every visit: start from the saved entry (or blank), then bring back any unsaved draft.
-  // Words already being typed are never reset; an untouched editor picks up the latest entry or prompt.
+  // Words already being typed are never reset.
   useOnReveal(() => {
     if (dirty) return;
     if (!isNew) {
       setTitle(props.initial.title);
-      setBody(props.initial.body);
+      load(props.initial.doc, props.initial.text);
     } else {
       setPromptId(props.initialPromptId);
     }
     const saved = draft.restore();
     if (!saved) return;
-    const differs = isNew ? saved.body.trim() !== "" : saved.body !== props.initial.body || saved.title !== props.initial.title;
+    const savedDoc = saved.doc ?? textToDoc(saved.body);
+    const differs = isNew ? saved.body.trim() !== "" : saved.body !== props.initial.text || saved.title !== props.initial.title || JSON.stringify(savedDoc) !== JSON.stringify(props.initial.doc);
     if (!differs) return;
     setTitle(saved.title);
-    setBody(saved.body);
+    load(savedDoc, saved.body);
     if (isNew) setPromptId(saved.promptId);
     setDirty(true);
     notify.info("Draft restored", "We kept what you were writing on this device.");
   });
-
-  // Grow the writing area with its text.
-  useEffect(() => {
-    const el = bodyRef.current;
-    if (!el) return;
-    el.style.height = "auto";
-    el.style.height = `${Math.max(el.scrollHeight, 280)}px`;
-  }, [body]);
 
   // Warn before leaving with unsaved words.
   useEffect(() => {
@@ -76,13 +90,14 @@ export function EntryEditor(props: Props) {
   }, [dirty]);
 
   const save = () => {
-    if (!body.trim()) {
+    if (!text.trim()) {
       notify.error("Write something before saving.");
-      bodyRef.current?.focus();
+      editorRef.current?.commands.focus();
       return;
     }
     startTransition(async () => {
-      const input = { title, body, promptId };
+      // Editor JSON can contain objects without a normal prototype; send a plain copy to the server.
+      const input = { title, doc: JSON.parse(JSON.stringify(doc)) as DocNode, promptId };
       let destination: string;
       if (props.mode === "new") {
         const result = await createEntry(input);
@@ -91,7 +106,7 @@ export function EntryEditor(props: Props) {
         destination = routes.journalEntry(result.data.id);
         // The next new entry starts blank, even though Next.js keeps this page alive.
         setTitle("");
-        setBody("");
+        load(EMPTY, "");
       } else {
         const result = await updateEntry(props.entryId, input);
         if (!result.ok) return void notify.error(result.error);
@@ -129,7 +144,7 @@ export function EntryEditor(props: Props) {
   return (
     <div className="flex min-h-dvh flex-col bg-surface">
       <header className="sticky top-0 z-20 border-b border-rule bg-surface pt-safe">
-        <div className="mx-auto flex h-[60px] max-w-[760px] items-center justify-between gap-3 px-4 sm:px-8">
+        <div className="mx-auto flex h-[60px] max-w-[820px] items-center justify-between gap-3 px-4 sm:px-8">
           <Link href={backHref} aria-label={isNew ? "Close" : "Back to entry"} className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "-ml-2")}>
             {isNew ? <X /> : <ArrowLeft />}
           </Link>
@@ -137,13 +152,13 @@ export function EntryEditor(props: Props) {
             {words === 1 ? "1 word" : `${words.toLocaleString("en")} words`}
             {dirty ? <span className="hidden sm:inline"> · Draft kept on this device</span> : null}
           </p>
-          <Button onClick={save} loading={pending} disabled={!body.trim()} size="sm" className="min-w-20">
+          <Button onClick={save} loading={pending} disabled={!text.trim()} size="sm" className="min-w-20">
             {isNew ? "Save" : "Save changes"}
           </Button>
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-[760px] flex-1 px-4 pt-8 pb-24 sm:px-8 sm:pt-12">
+      <main className="mx-auto w-full max-w-[820px] flex-1 px-4 pt-6 pb-36 sm:px-8 sm:pt-8 md:pb-24">
         {promptText ? (
           <div className="mb-8 flex items-start justify-between gap-4 rounded-[20px] bg-sand px-5 py-4">
             <p className="font-serif text-[19px] leading-snug text-ink italic sm:text-[21px]">{promptText}</p>
@@ -175,25 +190,27 @@ export function EntryEditor(props: Props) {
             setTitle(e.target.value);
             setDirty(true);
           }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              editorRef.current?.commands.focus("start");
+            }
+          }}
           maxLength={120}
           placeholder="Title (optional)"
-          className="w-full bg-transparent text-[26px] leading-tight font-semibold tracking-[-0.02em] text-ink placeholder:text-faint/70 focus:outline-none sm:text-[30px]"
+          className="mb-5 w-full bg-transparent text-[26px] leading-tight font-semibold tracking-[-0.02em] text-ink placeholder:text-faint/70 focus:outline-none sm:text-[30px]"
         />
-        <label htmlFor="entry-body" className="sr-only">
-          Your entry
-        </label>
-        <textarea
-          id="entry-body"
-          ref={bodyRef}
-          value={body}
-          onChange={(e) => {
-            setBody(e.target.value);
+
+        <RichEditor
+          initial={startDoc}
+          placeholder={isNew ? props.placeholder ?? "Start wherever you are." : "Write your entry"}
+          autoFocus={isNew}
+          onReady={onReady}
+          onChange={(nextDoc, nextText) => {
+            setDoc(nextDoc);
+            setText(nextText);
             setDirty(true);
           }}
-          autoFocus={isNew}
-          maxLength={50000}
-          placeholder={isNew ? props.placeholder ?? "Start wherever you are." : undefined}
-          className="mt-5 w-full resize-none bg-transparent font-serif text-[19px] leading-[1.7] text-ink placeholder:text-faint/70 focus:outline-none sm:text-[21px]"
         />
       </main>
     </div>

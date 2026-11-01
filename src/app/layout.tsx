@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Hanken_Grotesk, Newsreader } from "next/font/google";
+import { Caveat, Courier_Prime, Hanken_Grotesk, Newsreader } from "next/font/google";
 import { ServiceWorker } from "@/components/shell/service-worker";
 import { Toaster } from "@/components/ui/toaster";
 import { env } from "@/lib/env";
@@ -18,6 +18,10 @@ const newsreader = Newsreader({
   style: ["normal", "italic"],
   display: "swap",
 });
+
+// Journal fonts: only downloaded when an entry uses them.
+const caveat = Caveat({ variable: "--font-caveat", subsets: ["latin"], display: "swap", preload: false });
+const courier = Courier_Prime({ variable: "--font-courier", subsets: ["latin"], weight: ["400", "700"], style: ["normal", "italic"], display: "swap", preload: false });
 
 export const metadata: Metadata = {
   metadataBase: new URL(env.NEXT_PUBLIC_SITE_URL),
@@ -50,7 +54,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${hanken.variable} ${newsreader.variable} antialiased`} suppressHydrationWarning>
+    <html lang="en" className={`${hanken.variable} ${newsreader.variable} ${caveat.variable} ${courier.variable} antialiased`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>

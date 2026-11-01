@@ -45,7 +45,7 @@ test("an unsaved draft survives a reload", async ({ page }) => {
   await page.waitForTimeout(700);
   page.on("dialog", (d) => d.accept());
   await page.reload();
-  await expect(page.getByLabel("Your entry").filter({ visible: true })).toHaveValue("Words I don't want to lose");
+  await expect(page.getByRole("textbox", { name: "Your entry" })).toHaveText("Words I don't want to lose");
   await expectToast(page, "Draft restored");
 });
 

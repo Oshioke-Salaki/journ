@@ -93,14 +93,14 @@ isOneToOne: false
                   ]
                 },"journal_entries": {
                   Row: {
-                    "body": string,"created_at": string,"id": string,"kind": Database["public"]['Enums']["journal_kind"],"local_date": string,"prompt_body": string | null,"prompt_id": string | null,"title": string | null,"updated_at": string,"user_id": string
+                    "body": string,"body_doc": Json | null,"created_at": string,"id": string,"kind": Database["public"]['Enums']["journal_kind"],"local_date": string,"prompt_body": string | null,"prompt_id": string | null,"title": string | null,"updated_at": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "body"?: string,"created_at"?: string,"id"?: string,"kind"?: Database["public"]['Enums']["journal_kind"],"local_date": string,"prompt_body"?: string | null,"prompt_id"?: string | null,"title"?: string | null,"updated_at"?: string,"user_id"?: string
+                    "body"?: string,"body_doc"?: Json | null,"created_at"?: string,"id"?: string,"kind"?: Database["public"]['Enums']["journal_kind"],"local_date": string,"prompt_body"?: string | null,"prompt_id"?: string | null,"title"?: string | null,"updated_at"?: string,"user_id"?: string
                   }
                   Update: {
-                    "body"?: string,"created_at"?: string,"id"?: string,"kind"?: Database["public"]['Enums']["journal_kind"],"local_date"?: string,"prompt_body"?: string | null,"prompt_id"?: string | null,"title"?: string | null,"updated_at"?: string,"user_id"?: string
+                    "body"?: string,"body_doc"?: Json | null,"created_at"?: string,"id"?: string,"kind"?: Database["public"]['Enums']["journal_kind"],"local_date"?: string,"prompt_body"?: string | null,"prompt_id"?: string | null,"title"?: string | null,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     {

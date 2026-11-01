@@ -7,7 +7,8 @@ export const entrySchema = z.object({
     .max(120, "Keep the title under 120 characters.")
     .transform((v) => (v === "" ? null : v))
     .nullable(),
-  body: z.string().trim().min(1, "Write something before saving.").max(50000, "This entry is too long to save."),
+  /** The editor document (ProseMirror JSON). Sanitised on the server; see rich/document.ts. */
+  doc: z.unknown(),
   promptId: z.uuid().nullable(),
 });
 

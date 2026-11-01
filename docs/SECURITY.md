@@ -23,6 +23,10 @@ Treat every change to data handling as a privacy change.
   action (`lib/auth/session.ts`). Redirects after sign-in accept only same-site paths.
 - **Validation** with Zod on the client and again on the server for every action; database checks
   as the last line (lengths, ranges, enums).
+- **Formatted journal entries** are stored as structured JSON, never HTML. The server rebuilds every
+  document through an allow-list (`features/journal/rich/document.ts`): unknown elements are dropped,
+  and fonts, sizes, colours and highlights must be one of the palette's values. The plain text is
+  derived on the server, not taken from the browser. Links, images and code are not part of the schema.
 - **Logging** never includes journal text, notes or profile details.
 - **Security headers** on every response: HSTS, no framing (clickjacking), no MIME sniffing, a strict
   referrer policy, camera, microphone and location blocked, and cross-origin window isolation.
