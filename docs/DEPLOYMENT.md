@@ -40,6 +40,10 @@ in JournApp's name and billing, and invite developers to it.
 ## 2. Vercel
 
 1. Import the repository. Framework: Next.js. Install command `pnpm install`, build `pnpm build`.
+   `vercel.json` pins the server functions to **`lhr1` (London)**, the same city as the Supabase
+   project (`eu-west-2`). Keep them together: every page and action talks to the database several
+   times, and running in Vercel's default (Washington) added a transatlantic round trip to each. If
+   the database ever moves, move `regions` with it.
 2. Environment variables (Production and Preview):
 
    | Name | Value |
