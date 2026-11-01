@@ -13,6 +13,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "build:e2e": "NEXT_PUBLIC_SITE_URL=http://localhost:3197 next build",
     "check": "pnpm typecheck && pnpm lint && pnpm test",
     "db:start": "supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor,postgres-meta",
     "db:stop": "supabase stop",

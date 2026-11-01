@@ -57,6 +57,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"feedback": {
+                  Row: {
+                    "body": string,"created_at": string,"id": string,"kind": Database["public"]['Enums']["feedback_kind"],"page": string | null,"status": Database["public"]['Enums']["feedback_status"],"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "body": string,"created_at"?: string,"id"?: string,"kind"?: Database["public"]['Enums']["feedback_kind"],"page"?: string | null,"status"?: Database["public"]['Enums']["feedback_status"],"user_id"?: string
+                  }
+                  Update: {
+                    "body"?: string,"created_at"?: string,"id"?: string,"kind"?: Database["public"]['Enums']["feedback_kind"],"page"?: string | null,"status"?: Database["public"]['Enums']["feedback_status"],"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"goal_steps": {
                   Row: {
                     "created_at": string,"done_at": string | null,"due_date": string | null,"goal_id": string,"id": string,"position": number,"title": string,"user_id": string
@@ -93,14 +107,14 @@ isOneToOne: false
                   ]
                 },"journal_entries": {
                   Row: {
-                    "body": string,"body_doc": Json | null,"created_at": string,"id": string,"kind": Database["public"]['Enums']["journal_kind"],"local_date": string,"prompt_body": string | null,"prompt_id": string | null,"title": string | null,"updated_at": string,"user_id": string
+                    "body": string,"body_doc": Json | null,"created_at": string,"id": string,"kind": Database["public"]['Enums']["journal_kind"],"local_date": string,"prompt_body": string | null,"prompt_id": string | null,"tags": (string)[],"title": string | null,"updated_at": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "body"?: string,"body_doc"?: Json | null,"created_at"?: string,"id"?: string,"kind"?: Database["public"]['Enums']["journal_kind"],"local_date": string,"prompt_body"?: string | null,"prompt_id"?: string | null,"title"?: string | null,"updated_at"?: string,"user_id"?: string
+                    "body"?: string,"body_doc"?: Json | null,"created_at"?: string,"id"?: string,"kind"?: Database["public"]['Enums']["journal_kind"],"local_date": string,"prompt_body"?: string | null,"prompt_id"?: string | null,"tags"?: (string)[],"title"?: string | null,"updated_at"?: string,"user_id"?: string
                   }
                   Update: {
-                    "body"?: string,"body_doc"?: Json | null,"created_at"?: string,"id"?: string,"kind"?: Database["public"]['Enums']["journal_kind"],"local_date"?: string,"prompt_body"?: string | null,"prompt_id"?: string | null,"title"?: string | null,"updated_at"?: string,"user_id"?: string
+                    "body"?: string,"body_doc"?: Json | null,"created_at"?: string,"id"?: string,"kind"?: Database["public"]['Enums']["journal_kind"],"local_date"?: string,"prompt_body"?: string | null,"prompt_id"?: string | null,"tags"?: (string)[],"title"?: string | null,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -113,14 +127,14 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "birth_country": string | null,"birth_latitude": number | null,"birth_longitude": number | null,"birth_place": string | null,"birth_time": string | null,"birth_timezone": string | null,"country": string | null,"created_at": string,"date_of_birth": string | null,"display_name": string | null,"goal_prompts_enabled": boolean,"id": string,"language": string,"mature_content_confirmed_at": string | null,"onboarded_at": string | null,"plan": Database["public"]['Enums']["member_plan"],"pronouns": string | null,"reminder_time": string,"reminders_enabled": boolean,"role": Database["public"]['Enums']["member_role"],"timezone": string,"updated_at": string
+                    "birth_country": string | null,"birth_latitude": number | null,"birth_longitude": number | null,"birth_place": string | null,"birth_time": string | null,"birth_timezone": string | null,"checklist_dismissed_at": string | null,"country": string | null,"created_at": string,"date_of_birth": string | null,"display_name": string | null,"goal_prompts_enabled": boolean,"id": string,"language": string,"mature_content_confirmed_at": string | null,"onboarded_at": string | null,"plan": Database["public"]['Enums']["member_plan"],"pronouns": string | null,"reminder_time": string,"reminders_enabled": boolean,"role": Database["public"]['Enums']["member_role"],"timezone": string,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "birth_country"?: string | null,"birth_latitude"?: number | null,"birth_longitude"?: number | null,"birth_place"?: string | null,"birth_time"?: string | null,"birth_timezone"?: string | null,"country"?: string | null,"created_at"?: string,"date_of_birth"?: string | null,"display_name"?: string | null,"goal_prompts_enabled"?: boolean,"id": string,"language"?: string,"mature_content_confirmed_at"?: string | null,"onboarded_at"?: string | null,"plan"?: Database["public"]['Enums']["member_plan"],"pronouns"?: string | null,"reminder_time"?: string,"reminders_enabled"?: boolean,"role"?: Database["public"]['Enums']["member_role"],"timezone"?: string,"updated_at"?: string
+                    "birth_country"?: string | null,"birth_latitude"?: number | null,"birth_longitude"?: number | null,"birth_place"?: string | null,"birth_time"?: string | null,"birth_timezone"?: string | null,"checklist_dismissed_at"?: string | null,"country"?: string | null,"created_at"?: string,"date_of_birth"?: string | null,"display_name"?: string | null,"goal_prompts_enabled"?: boolean,"id": string,"language"?: string,"mature_content_confirmed_at"?: string | null,"onboarded_at"?: string | null,"plan"?: Database["public"]['Enums']["member_plan"],"pronouns"?: string | null,"reminder_time"?: string,"reminders_enabled"?: boolean,"role"?: Database["public"]['Enums']["member_role"],"timezone"?: string,"updated_at"?: string
                   }
                   Update: {
-                    "birth_country"?: string | null,"birth_latitude"?: number | null,"birth_longitude"?: number | null,"birth_place"?: string | null,"birth_time"?: string | null,"birth_timezone"?: string | null,"country"?: string | null,"created_at"?: string,"date_of_birth"?: string | null,"display_name"?: string | null,"goal_prompts_enabled"?: boolean,"id"?: string,"language"?: string,"mature_content_confirmed_at"?: string | null,"onboarded_at"?: string | null,"plan"?: Database["public"]['Enums']["member_plan"],"pronouns"?: string | null,"reminder_time"?: string,"reminders_enabled"?: boolean,"role"?: Database["public"]['Enums']["member_role"],"timezone"?: string,"updated_at"?: string
+                    "birth_country"?: string | null,"birth_latitude"?: number | null,"birth_longitude"?: number | null,"birth_place"?: string | null,"birth_time"?: string | null,"birth_timezone"?: string | null,"checklist_dismissed_at"?: string | null,"country"?: string | null,"created_at"?: string,"date_of_birth"?: string | null,"display_name"?: string | null,"goal_prompts_enabled"?: boolean,"id"?: string,"language"?: string,"mature_content_confirmed_at"?: string | null,"onboarded_at"?: string | null,"plan"?: Database["public"]['Enums']["member_plan"],"pronouns"?: string | null,"reminder_time"?: string,"reminders_enabled"?: boolean,"role"?: Database["public"]['Enums']["member_role"],"timezone"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     
@@ -158,6 +172,26 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"saved_videos": {
+                  Row: {
+                    "created_at": string,"user_id": string,"video_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"user_id"?: string,"video_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"user_id"?: string,"video_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "saved_videos_video_id_fkey"
+      columns: ["video_id"]
+isOneToOne: false
+      referencedRelation: "videos"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"topics": {
                   Row: {
@@ -227,7 +261,23 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "admin_stats":
+            "admin_list_admins":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "created_at": string,"display_name": string,"email": string,"id": string
+            }[]
+                           },
+"admin_list_feedback":
+{ Args: { "only_status"?: Database["public"]['Enums']["feedback_status"] }; Returns: {
+              "body": string,"created_at": string,"display_name": string,"email": string,"id": string,"kind": Database["public"]['Enums']["feedback_kind"],"page": string,"status": Database["public"]['Enums']["feedback_status"]
+            }[]
+                           },
+"admin_reset_two_step":
+{ Args: { "target_email": string }; Returns: string
+                           },
+"admin_set_role":
+{ Args: { "make_admin": boolean,"target_email": string }; Returns: string
+                           },
+"admin_stats":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
 "delete_my_account":
@@ -237,6 +287,9 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
 "is_admin":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"mfa_satisfied":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
 "quote_for_day":
@@ -253,10 +306,13 @@ isOneToOne: false
         to: "quotes"
         isOneToOne: false
         isSetofReturn: true
-      } }
+      } },
+"valid_tags":
+{ Args: { "tags": (string)[] }; Returns: boolean
+                           }
           }
           Enums: {
-            "content_tier": "free"|"premium","control_zone": "control"|"influence"|"outside","goal_area": "body"|"mind"|"relationships"|"work"|"growth"|"other","goal_status": "active"|"achieved"|"paused","journal_kind": "free"|"prompted","member_plan": "free"|"premium","member_role": "member"|"admin","tracker_kind": "water"|"sleep"|"movement"|"nutrition"|"meditation","video_kind": "lesson"|"practice"|"coaching_session","vision_kind": "image"|"words"
+            "content_tier": "free"|"premium","control_zone": "control"|"influence"|"outside","feedback_kind": "idea"|"problem"|"other","feedback_status": "new"|"done","goal_area": "body"|"mind"|"relationships"|"work"|"growth"|"other","goal_status": "active"|"achieved"|"paused","journal_kind": "free"|"prompted","member_plan": "free"|"premium","member_role": "member"|"admin","tracker_kind": "water"|"sleep"|"movement"|"nutrition"|"meditation","video_kind": "lesson"|"practice"|"coaching_session","vision_kind": "image"|"words"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -376,7 +432,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "content_tier": ["free", "premium"],"control_zone": ["control", "influence", "outside"],"goal_area": ["body", "mind", "relationships", "work", "growth", "other"],"goal_status": ["active", "achieved", "paused"],"journal_kind": ["free", "prompted"],"member_plan": ["free", "premium"],"member_role": ["member", "admin"],"tracker_kind": ["water", "sleep", "movement", "nutrition", "meditation"],"video_kind": ["lesson", "practice", "coaching_session"],"vision_kind": ["image", "words"]
+            "content_tier": ["free", "premium"],"control_zone": ["control", "influence", "outside"],"feedback_kind": ["idea", "problem", "other"],"feedback_status": ["new", "done"],"goal_area": ["body", "mind", "relationships", "work", "growth", "other"],"goal_status": ["active", "achieved", "paused"],"journal_kind": ["free", "prompted"],"member_plan": ["free", "premium"],"member_role": ["member", "admin"],"tracker_kind": ["water", "sleep", "movement", "nutrition", "meditation"],"video_kind": ["lesson", "practice", "coaching_session"],"vision_kind": ["image", "words"]
           }
         }
 } as const

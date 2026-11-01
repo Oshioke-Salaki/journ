@@ -13,9 +13,21 @@ Everything members read is managed in the admin area at `/admin`:
 
 Switching something off hides it from members without deleting it.
 
+## Member messages
+
+Members write to the team from Settings → Send feedback. Read them in **Admin → Inbox**; reply from
+your own email (tap the address), then mark the message handled.
+
+A member who lost the phone with their authenticator app: confirm it is them (for example, they email
+from the account's address), then **Admin → Team → Reset two-step sign-in**. They sign in with their
+password and can set it up again.
+
 ## Admins
 
-- Local: `pnpm admin:grant someone@example.com`.
+- In the app: **Admin → Team**, add by email (the person needs an account first) or remove.
+- Admins are encouraged to turn on two-step sign-in (Settings). Once on, the admin area only works
+  after the code is entered.
+- Local, from the command line: `pnpm admin:grant someone@example.com`.
 - Production: in the Supabase SQL editor,
   ```sql
   update public.profiles set role = 'admin'

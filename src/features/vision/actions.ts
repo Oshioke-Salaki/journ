@@ -38,6 +38,7 @@ export async function addWords(input: { words: string; caption?: string | null }
     .insert({ user_id: user.id, kind: "words", words: parsed.data.words, caption: parsed.data.caption, position: await nextPosition(supabase) });
   if (error) return logged("words", error);
   revalidatePath(routes.vision);
+  revalidatePath(routes.today);
   return ok(undefined, "Added to your board");
 }
 
@@ -62,6 +63,7 @@ export async function addImage(input: { path: string; caption?: string | null })
     return logged("image", error);
   }
   revalidatePath(routes.vision);
+  revalidatePath(routes.today);
   return ok(undefined, "Picture added");
 }
 
@@ -77,5 +79,6 @@ export async function removeVisionItem(id: string): Promise<ActionResult> {
     if (storageError) console.error("[vision] storage remove", storageError.message);
   }
   revalidatePath(routes.vision);
+  revalidatePath(routes.today);
   return ok(undefined, "Removed");
 }

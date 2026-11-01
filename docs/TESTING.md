@@ -5,15 +5,16 @@ Four layers, from fastest to most complete.
 | Layer | Command | Covers |
 | --- | --- | --- |
 | Types and lint | `pnpm typecheck`, `pnpm lint` | Route types, TypeScript strict, React and Next.js rules |
-| Unit | `pnpm test` | Dates and timezones, safe redirects, validation rules, landscape geometry, report maths, tracker formatting, auth messages (`tests/unit`) |
-| Database | `pnpm db:test` | Row level security for every member table and storage, column grants (no self-promotion to admin or premium), the export, account deletion, admin-only stats (`supabase/tests/database`) |
+| Unit | `pnpm test` | Dates and timezones, safe redirects, validation rules, landscape geometry, report maths, tracker formatting, auth messages, check-in suggestions, insights, calendar layout, the 7-day check-in limit, journal tags (`tests/unit`) |
+| Database | `pnpm db:test` | Row level security for every member table and storage, column grants (no self-promotion to admin or premium), the export, account deletion, admin-only stats, the admin team, tags, saved videos, the feedback inbox, two-step sign-in enforcement (`supabase/tests/database`) |
 | End to end | `pnpm test:e2e` | Every flow in a real browser against the local database, on a 1440×900 laptop, an iPhone 15 and an iPad (`tests/e2e`) |
 
 `pnpm check` runs types, lint and unit tests together.
 
 ## End-to-end tests
 
-Prerequisites: `pnpm db:start` and `pnpm build`. Playwright starts `next start` on port 3197 (it reuses
+Prerequisites: `pnpm db:start` and `pnpm build:e2e` (a production build whose site URL is the test
+port, so email links and link-preview images point at the app under test). Playwright starts `next start` on port 3197 (it reuses
 one already running). Every test signs up its own member, so tests run in parallel and never share
 state.
 
@@ -26,6 +27,8 @@ state.
 | `content.spec.ts` | Discover filtering and video page, Community topics and the 18+ gate, the welcome page's live check-in |
 | `features.spec.ts` | Trackers, circle of control to goal, vision board words and picture upload, journal search, public support page, admin access and content management |
 | `settings.spec.ts` | Profile, preferences, theme, data export contents, account deletion (and sign-in refused afterwards) |
+| `gaps.spec.ts` | Journal in the navigation, the day page, editing goal steps, the admin team |
+| `member-needs.spec.ts` | First-week checklist, check-in suggestions, missed-day check-ins and the 7-day limit, calendar, journal tags, filters and printing, feedback and the admin inbox, time zone and the travel prompt, app lock, two-step sign-in end to end (codes generated in the test), video search and saving, the guide |
 | `screens.spec.ts` | Screenshots of every screen in light and dark, plus axe accessibility checks (fails on serious or critical issues) |
 
 ## Against the live site

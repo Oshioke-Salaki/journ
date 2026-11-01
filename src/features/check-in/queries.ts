@@ -30,3 +30,11 @@ export async function getRecentCheckIns(today: string, days: number): Promise<Ch
   if (error) throw new Error(`Could not load check-ins: ${error.message}`);
   return data.map(normalise);
 }
+
+/** Check-ins between two dates (inclusive), oldest first. */
+export async function getCheckInsBetween(from: string, to: string): Promise<CheckIn[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("check_ins").select("*").gte("local_date", from).lte("local_date", to).order("local_date", { ascending: true });
+  if (error) throw new Error(`Could not load check-ins: ${error.message}`);
+  return data.map(normalise);
+}

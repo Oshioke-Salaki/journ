@@ -65,7 +65,7 @@ function SidebarLinks({ pathname }: { pathname: string | null }) {
 
 function TabLinks({ pathname }: { pathname: string | null }) {
   return (
-    <ul className="mx-auto grid h-[58px] max-w-lg grid-cols-4">
+    <ul className="mx-auto grid h-[58px] max-w-lg grid-cols-5">
       {navItems.map((item) => {
         const active = pathname !== null && isActive(item, pathname);
         const Icon = item.icon;
@@ -75,7 +75,7 @@ function TabLinks({ pathname }: { pathname: string | null }) {
               href={item.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex h-full flex-col items-center justify-center gap-1 text-[11.5px] font-medium transition-colors active:scale-95",
+                "flex h-full flex-col items-center justify-center gap-1 text-[11px] font-medium transition-colors active:scale-95",
                 active ? "text-ink" : "text-faint",
               )}
             >

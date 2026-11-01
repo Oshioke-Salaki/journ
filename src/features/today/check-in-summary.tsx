@@ -14,7 +14,19 @@ const LEVELS = [
 ] as const;
 
 /** Today's check-in, once it is done: the day's landscape and what was noticed. */
-export function CheckInSummary({ checkIn, userId, timeZone }: { checkIn: CheckIn; userId: string; timeZone: string }) {
+export function CheckInSummary({
+  checkIn,
+  userId,
+  timeZone,
+  editable = true,
+  editHref = routes.checkIn,
+}: {
+  checkIn: CheckIn;
+  userId: string;
+  timeZone: string;
+  editable?: boolean;
+  editHref?: string;
+}) {
   const updated = new Date(checkIn.updated_at);
   return (
     <div className="flex flex-col gap-6">
@@ -24,17 +36,19 @@ export function CheckInSummary({ checkIn, userId, timeZone }: { checkIn: CheckIn
         seed={seedFrom(`${userId}:${checkIn.local_date}`)}
         radius={14}
         className="aspect-[16/7] rounded-[18px]"
-        title={`Today's landscape: feeling ${moodLabel(checkIn.mood).toLowerCase()}`}
+        title={`A landscape for feeling ${moodLabel(checkIn.mood).toLowerCase()}`}
       />
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-[14px] text-muted">Feeling</p>
           <h2 className="text-[26px] leading-tight font-semibold tracking-[-0.02em] text-ink">{moodLabel(checkIn.mood)}</h2>
         </div>
-        <Link href={routes.checkIn} className={cn(buttonVariants({ variant: "secondary", size: "sm" }), "shrink-0")}>
-          <Pencil aria-hidden />
-          Update
-        </Link>
+        {editable ? (
+          <Link href={editHref} className={cn(buttonVariants({ variant: "secondary", size: "sm" }), "shrink-0")}>
+            <Pencil aria-hidden />
+            Update
+          </Link>
+        ) : null}
       </div>
 
       <dl className="grid grid-cols-3 divide-x divide-rule rounded-[16px] bg-surface py-3">

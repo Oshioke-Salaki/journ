@@ -74,6 +74,7 @@ async function Overview() {
               ["Check-ins", stats.check_ins_7d],
               ["Journal entries", stats.entries_7d],
               ["Goals in progress", stats.goals_active],
+              ["Unread feedback", stats.feedback_new],
             ].map(([label, value]) => (
               <div key={label} className="flex justify-between py-2.5 text-[15px]">
                 <dt className="text-ink">{label}</dt>

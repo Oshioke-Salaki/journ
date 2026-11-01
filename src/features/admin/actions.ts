@@ -108,3 +108,35 @@ export async function saveTopic(slug: string, input: TopicInput): Promise<Action
   published();
   return ok(undefined, "Topic saved");
 }
+
+const TEAM_MESSAGES: Record<string, string> = {
+  not_found: "No JournApp account uses that email. Ask them to sign up first.",
+  self: "You can't remove yourself. Ask another admin to do it.",
+  last_admin: "JournApp needs at least one admin.",
+};
+
+/** Adds or removes an admin. The database enforces who may do this and the safety rules. */
+export async function setAdmin(email: string, makeAdmin: boolean): Promise<ActionResult> {
+  const parsed = z.string().trim().toLowerCase().pipe(z.email("Enter a valid email address.")).safeParse(email);
+  if (!parsed.success) return fail(parsed.error.issues[0].message, { email: [parsed.error.issues[0].message] });
+  await requireAdmin();
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_set_role", { target_email: parsed.data, make_admin: makeAdmin });
+  if (error) return logged("team", error);
+  if (data !== "ok") return fail(TEAM_MESSAGES[data] ?? UNEXPECTED_ERROR);
+  revalidatePath("/admin/team");
+  return ok(undefined, makeAdmin ? "Admin added" : "Admin removed");
+}
+
+/** Removes a member's authenticator app after they lost it, so they can sign in with a password. */
+export async function resetTwoStep(email: string): Promise<ActionResult> {
+  const parsed = z.string().trim().toLowerCase().pipe(z.email("Enter a valid email address.")).safeParse(email);
+  if (!parsed.success) return fail(parsed.error.issues[0].message, { email: [parsed.error.issues[0].message] });
+  await requireAdmin();
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_reset_two_step", { target_email: parsed.data });
+  if (error) return logged("two-step", error);
+  if (data === "not_found") return fail("No account uses that email.", { email: ["No account uses that email."] });
+  if (data === "none") return fail("That account doesn't use two-step sign-in.");
+  return ok(undefined, "Two-step sign-in reset");
+}

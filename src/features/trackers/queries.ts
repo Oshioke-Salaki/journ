@@ -45,3 +45,23 @@ export async function getTrackerAverages(from: string, to: string) {
   }
   return [...sums].map(([kind, s]) => ({ kind, average: s.total / s.days, days: s.days }));
 }
+
+/** Each day's total per tracker between two dates: date -> kind -> value. */
+export async function getTrackerDaily(from: string, to: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("tracker_entries")
+    .select("kind, value, local_date, created_at")
+    .gte("local_date", from)
+    .lte("local_date", to)
+    .order("created_at");
+  if (error) throw new Error(`Could not load tracking: ${error.message}`);
+  const days = new Map<string, TrackerTotals>();
+  for (const row of data) {
+    const day = days.get(row.local_date) ?? {};
+    const value = Number(row.value);
+    day[row.kind] = tracker(row.kind).mode === "add" ? (day[row.kind] ?? 0) + value : value;
+    days.set(row.local_date, day);
+  }
+  return days;
+}

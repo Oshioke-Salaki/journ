@@ -9,6 +9,8 @@ export const bodyNoteSchema = z.object({
 });
 
 export const checkInSchema = z.object({
+  /** The day it is for; missing means today. Earlier days are limited to BACKFILL_DAYS. */
+  date: z.iso.date().optional(),
   mood: level,
   energy: level.nullable(),
   efficiency: level.nullable(),

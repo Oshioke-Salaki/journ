@@ -20,6 +20,9 @@ From the sketch: tagline, link to video, sign in, sign up.
   and privacy. Timezone captured automatically. If email confirmation is on, a "Check your email" state.
 - **Sign in** (`/sign-in`): returns to the page the member was going to. Clear errors for a wrong
   password, an unconfirmed email and rate limits. An expired email link shows its own message.
+- **Two-step sign-in** (`/verify`): members who set up an authenticator app enter its 6-digit code
+  after their password. Until they do, every page sends them to `/verify`, and the database returns
+  none of their data (see SECURITY.md).
 - **Forgot / reset password:** never reveals whether an email has an account.
 - **Onboarding** (`/onboarding`), from the sketch's optional details: name; date and time of birth;
   place of birth as a searchable list of real towns (its coordinates and timezone are saved for
@@ -33,6 +36,15 @@ From the sketch: Today, Quote, Prompts to meet goals (when agreed), How I feel, 
 track, Free journaling.
 
 - Greeting by time of day in the member's timezone, with the day's fact.
+- **Your first week:** for a month after onboarding, five first things to try (check in, write, sort
+  a thought, set a goal, add to the vision board) with progress; disappears when done or hidden.
+- **Time zone prompt:** when the device's clock differs from the profile's time zone (she travelled),
+  "Looks like you're in London" with Use or Keep. Keep is remembered for that pair of zones.
+- **For how you feel:** after checking in, up to three suggestions from simple rules (no AI): tension
+  or worry → a breathing practice, overwhelm → the circle of control, low energy → gentle movement,
+  and a writing prompt matched to the mood. Premium videos are only suggested to premium members.
+- **Missed yesterday?** A link to add yesterday's check-in when it is empty.
+- **On this day:** entries written a week, a month and a year ago.
 - **How I feel:** if not checked in, tap a mood to start the check-in with it set; once done, today's
   landscape, mood, the three levels, body notes, feeling words and note, with Update.
 - **Quote:** the day's quote.
@@ -51,8 +63,9 @@ From "How I feel": overall mood, where in my body, energy levels, efficiency, se
 3. Energy, efficiency and self-satisfaction.
 4. Feeling words and a note.
 
-One check-in per day; opening it again edits today's. Keyboard support throughout. A very low mood
-shows a gentle link to support.
+One check-in per day; opening it again edits today's. A missed day can be added for up to seven days
+back (`/check-in?date=YYYY-MM-DD`, from the day page, the calendar or Today); the server enforces the
+limit. Keyboard support throughout. A very low mood shows a gentle link to support.
 
 ## Journal (`/journal`, `/journal/new`, `/journal/[id]`)
 
@@ -69,6 +82,11 @@ From "Free journaling: free writing, prompted writing".
 - Drafts are kept on the device as you type and restored if the tab closes; Cmd/Ctrl+S saves; a
   warning appears before leaving with unsaved words. Drafts are per member and cleared on sign-out.
 - List grouped by month, search as you type, a reading view, edit and delete (with confirmation).
+- **Tags:** up to 10 per entry, typed under the title (Enter or comma; suggestions from her own tags).
+  Shown on the entry and in the list; tap one, or a chip above the list, to filter. Search and tag
+  filters combine.
+- **Print or save as PDF** (`/journal/print`): everything, or one of the last 12 months, laid out for
+  paper and always printed in the light theme.
 
 ## Circle of control (`/control`)
 
@@ -81,6 +99,8 @@ existing goal or a new goal.
 From the sketch: a grid of videos.
 
 - Filter by topic instantly (kept in the URL). Free and premium labels, length, type.
+- Search by title, description, presenter or topic as you type.
+- **Save for later** on any video; the Saved tab lists them, newest first.
 - Video page: Mux player once the video is uploaded; until then an honest "being recorded" state.
   Premium videos show "Part of JournApp Premium, coming soon" to free members. Related videos.
 
@@ -93,6 +113,24 @@ From the sketch: Nutrition, Breathing, Women stuff (now "Women's health"), Exerc
 - Sexuality asks once for confirmation of age 18+.
 - Coaching explains that one-to-one coaching opens soon and offers the recorded sessions.
 
+## Navigation
+
+Today, Journal, Discover, Community and My Space: a sidebar on larger screens and five tabs on
+phones. Admins also see an Admin link. My Space has shortcuts to the journal, the circle of control,
+goals and the vision board.
+
+## A day (`/space/day/[date]`)
+
+Tap any day in My Space's day strip or the calendar: that day's check-in (with notes, body and
+feelings), journal entries, tracking and thoughts, with previous and next day. Check-ins from the
+last seven days can be added or updated from here.
+
+## Calendar (`/space/calendar`)
+
+A month at a glance, Monday first: each checked-in day as its landscape, a dot for days with writing,
+today highlighted. Days checked in, usual mood and entries for the month; earlier months back without
+limit; every day opens its day page.
+
 ## My Space (`/space`)
 
 From the sketch: My goals (set goals, check goals, my vision board), My plans, My reports.
@@ -103,21 +141,33 @@ From the sketch: My goals (set goals, check goals, my vision board), My plans, M
 - **My goals** (`/space/goals`): grouped by in progress, paused, achieved; set a goal with why, area,
   target date and first steps; each goal page has progress, steps (tick, add, remove), edit, pause,
   achieve, delete.
+- **What your days are telling you:** plain-language patterns from the last 90 days, each shown only
+  when both sides of the comparison have at least four days: mood after 7+ hours of sleep against
+  shorter nights, energy on days with 20+ minutes of movement or 6+ glasses of water, the hardest and
+  best weekday, and the feeling and body area that most often come with low days.
 - **My plans:** open dated steps, soonest first, overdue marked.
+- **My journal:** the three latest entries and a link to all of them.
+- Goal steps are edited in place: tap a step to change its wording or date.
 - **My vision board** (`/space/vision`): pictures (compressed in the browser, stored privately) and
   words.
 
 ## Settings (`/settings`)
 
-Profile and optional details; goal prompts and reminder time; appearance (match device, light,
-dark); change password (checks the current one first); download my data (JSON); support; sign out;
-delete account (type DELETE). Admins see a link
-to the admin area.
+Profile and optional details; goal prompts and reminder time; **time zone** (searchable, or "use
+this device"); appearance (match device, light, dark); **two-step sign-in** (set up with a QR code
+or key, turn off); **app lock** (a 4–6 digit code on this device, locking immediately or after 1, 5
+or 15 minutes away; wrong codes slow down after five tries; "Forgot your code?" signs out); change
+password (checks the current one first); download my data (JSON); **send feedback** (idea, problem
+or other; problem reports include the browser type); support and the guide; sign out; delete account
+(type DELETE). Admins see a link to the admin area.
 
-## Support (`/help`)
+## Support (`/help`) and the guide (`/guide`)
 
 Public, no sign-in needed: emergency numbers for Kenya (999, 112) as tap-to-call, the international
 helpline directory, and a 5-4-3-2-1 grounding exercise.
+
+The guide answers the questions members ask most (check-ins, missed days, suggestions, the journal,
+printing, insights, privacy, app lock, travelling, deleting), with a link to send feedback.
 
 ## Admin (`/admin`)
 
@@ -129,6 +179,11 @@ Admins only; everyone else sees "not found".
   length, presenter, Mux playback ID, published).
 - **Quotes, prompts:** add, edit, switch live, delete.
 - **Topics:** edit names, introductions and the 18+ flag.
+- **Inbox:** feedback from members with their name and email (tap to reply by email), filtered by new,
+  handled or all; mark handled or new again. Unread count on the overview.
+- **Team:** list the admins, add one by email, remove one. Nobody can remove themselves, and the last
+  admin can never be removed (enforced in the database). Reset two-step sign-in for a member who lost
+  their phone.
 
 Changes reach every member immediately.
 

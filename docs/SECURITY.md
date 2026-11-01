@@ -17,8 +17,17 @@ Treat every change to data handling as a privacy change.
   are shown through signed links that expire after an hour.
 - **Never cached on the server.** Member data is read at request time and never stored in Next.js's
   shared cache. Only public content (quotes, prompts, topics, videos) is cached.
-- **Shared devices.** Sign-out and account deletion do a full page load and clear journal drafts,
-  so nothing of one member stays in the browser for the next.
+- **Shared devices.** Sign-out and account deletion do a full page load and clear journal drafts and
+  the app lock, so nothing of one member stays in the browser for the next.
+- **Feedback** shows admins the sender's email (so they can reply) and nothing else about them.
+  Problem reports carry the browser's user agent; ideas and other messages carry nothing extra.
+- **Two-step sign-in** (TOTP authenticator apps) for any member, recommended for admins. It is
+  enforced in Postgres, not only by the app: with a verified authenticator, a password-only session
+  (`aal1`) reads and writes none of the member's rows or pictures, and is not an admin. Only an admin
+  can remove a lost authenticator (`admin_reset_two_step`), after confirming the member's identity.
+- **App lock** for shared devices: a 4–6 digit code, stored in the browser only as a salted PBKDF2
+  hash. A script in the page head hides the app before first paint when locked. It is a privacy
+  screen against someone picking up the phone, not encryption; forgetting it means signing out.
 - **Sessions** are refreshed by the proxy on every request and verified again in every page and
   action (`lib/auth/session.ts`). Redirects after sign-in accept only same-site paths.
 - **Validation** with Zod on the client and again on the server for every action; database checks

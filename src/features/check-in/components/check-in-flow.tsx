@@ -39,7 +39,11 @@ const TITLES: Record<Step, { title: string; body: string }> = {
   words: { title: "Any words for it?", body: "Pick what fits, and add a line if you like. Both optional." },
 };
 
-export function CheckInFlow({ initial, isUpdate: isUpdateProp, seed }: { initial: CheckInDraft; isUpdate: boolean; seed: number }) {
+/** A recent day the check-in is being added for, instead of today. */
+export type PastDay = { date: string; label: string; long: string };
+
+export function CheckInFlow({ initial, isUpdate: isUpdateProp, seed, pastDay = null }: { initial: CheckInDraft; isUpdate: boolean; seed: number; pastDay?: PastDay | null }) {
+  const exit = pastDay ? routes.day(pastDay.date) : routes.today;
   // Fixed at open: saving refreshes the page, which would otherwise flip this mid-flow.
   const [isUpdate, setIsUpdate] = useState(isUpdateProp);
   const router = useRouter();
@@ -72,7 +76,7 @@ export function CheckInFlow({ initial, isUpdate: isUpdateProp, seed }: { initial
       notify.error("Choose how you're feeling first.");
       return;
     }
-    const input: CheckInInput = { ...draft, mood: draft.mood };
+    const input: CheckInInput = { ...draft, mood: draft.mood, ...(pastDay ? { date: pastDay.date } : {}) };
     startTransition(async () => {
       const result = await saveCheckIn(input);
       if (!result.ok) {
@@ -80,7 +84,7 @@ export function CheckInFlow({ initial, isUpdate: isUpdateProp, seed }: { initial
         return;
       }
       setSaved(true);
-      router.prefetch(routes.today);
+      router.prefetch(exit);
     });
   };
 
@@ -114,7 +118,7 @@ export function CheckInFlow({ initial, isUpdate: isUpdateProp, seed }: { initial
             </span>
           ))}
         </div>
-        <Link href={routes.today} aria-label="Close check-in" className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "-mr-2")}>
+        <Link href={exit} aria-label="Close check-in" className={cn(buttonVariants({ variant: "ghost", size: "icon-sm" }), "-mr-2")}>
           <X />
         </Link>
       </header>
@@ -158,7 +162,11 @@ export function CheckInFlow({ initial, isUpdate: isUpdateProp, seed }: { initial
                 <Check className="size-6" strokeWidth={2.5} aria-hidden />
               </span>
               <h1 className="text-[28px] leading-[1.15] font-semibold tracking-[-0.02em] sm:text-[32px]">
-                {isUpdate ? "Today's check-in is updated" : "Checked in for today"}
+                {pastDay
+                  ? `${pastDay.label}'s check-in is ${isUpdate ? "updated" : "saved"}`
+                  : isUpdate
+                    ? "Today's check-in is updated"
+                    : "Checked in for today"}
               </h1>
               <p className="mt-2 text-[17px] text-muted">
                 Feeling {moodLabel(draft.mood ?? 3).toLowerCase()}
@@ -174,13 +182,21 @@ export function CheckInFlow({ initial, isUpdate: isUpdateProp, seed }: { initial
                 </p>
               ) : null}
               <div className="mt-8 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-                <Link href={`${routes.newJournalEntry}?from=check-in`} className={buttonVariants({ size: "lg" })}>
-                  <PenLine aria-hidden />
-                  Write about today
-                </Link>
-                <Link href={routes.today} className={buttonVariants({ variant: "secondary", size: "lg" })}>
-                  Back to Today
-                </Link>
+                {pastDay ? (
+                  <Link href={exit} className={buttonVariants({ size: "lg" })}>
+                    Back to {pastDay.long}
+                  </Link>
+                ) : (
+                  <>
+                    <Link href={`${routes.newJournalEntry}?from=check-in`} className={buttonVariants({ size: "lg" })}>
+                      <PenLine aria-hidden />
+                      Write about today
+                    </Link>
+                    <Link href={routes.today} className={buttonVariants({ variant: "secondary", size: "lg" })}>
+                      Back to Today
+                    </Link>
+                  </>
+                )}
               </div>
             </motion.section>
           ) : (
@@ -194,7 +210,7 @@ export function CheckInFlow({ initial, isUpdate: isUpdateProp, seed }: { initial
               aria-labelledby="step-title"
             >
               <h1 id="step-title" className="text-[26px] leading-[1.15] font-semibold tracking-[-0.02em] text-ink sm:text-[30px]">
-                {TITLES[step].title}
+                {pastDay && step === "mood" ? `How were you feeling ${pastDay.label === "Yesterday" ? "yesterday" : `on ${pastDay.label}`}?` : TITLES[step].title}
               </h1>
               <p className="mt-2 mb-8 text-[16px] text-muted">{TITLES[step].body}</p>
 

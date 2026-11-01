@@ -53,7 +53,11 @@ export async function signIn(input: SignInInput): Promise<ActionResult<Redirect>
     password: parsed.data.password,
   });
   if (error) return fail(authErrorMessage(error));
-  return ok({ next: safeNextPath(parsed.data.next) });
+  // With an authenticator app set up, the code comes next.
+  const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  const next = safeNextPath(parsed.data.next);
+  if (aal?.nextLevel === "aal2" && aal.currentLevel !== "aal2") return ok({ next: `${routes.verify}?next=${encodeURIComponent(next)}` });
+  return ok({ next });
 }
 
 export async function requestPasswordReset(input: ForgotPasswordInput): Promise<ActionResult> {

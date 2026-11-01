@@ -14,13 +14,14 @@ import { createEntry, updateEntry } from "../actions";
 import { textToDoc, type DocNode } from "../rich/document";
 import { RichEditor } from "../rich/rich-editor";
 import { wordCount } from "../schemas";
+import { TagInput } from "./tag-input";
 import { useDraft } from "./use-draft";
 
 type Prompt = { id: string; body: string };
 
-type Props = { userId: string } & (
+type Props = { userId: string; knownTags: string[] } & (
   | { mode: "new"; prompts: Prompt[]; initialPromptId: string | null; placeholder?: string }
-  | { mode: "edit"; entryId: string; initial: { title: string; doc: DocNode; text: string }; promptBody: string | null; prompts?: never }
+  | { mode: "edit"; entryId: string; initial: { title: string; doc: DocNode; text: string; tags: string[] }; promptBody: string | null; prompts?: never }
 );
 
 const EMPTY: DocNode = { type: "doc", content: [{ type: "paragraph" }] };
@@ -38,6 +39,8 @@ export function EntryEditor(props: Props) {
   const [doc, setDoc] = useState<DocNode>(startDoc);
   const [text, setText] = useState(startText);
   const [promptId, setPromptId] = useState<string | null>(isNew ? props.initialPromptId : null);
+  const startTags = isNew ? [] : props.initial.tags;
+  const [tags, setTags] = useState<string[]>(startTags);
   const [dirty, setDirty] = useState(false);
 
   // The editor appears after the first render; content chosen before then is applied when it does.
@@ -54,7 +57,7 @@ export function EntryEditor(props: Props) {
     if (JSON.stringify(editor.getJSON()) !== JSON.stringify(wantedDoc.current)) editor.commands.setContent(wantedDoc.current, { emitUpdate: false });
   }, []);
 
-  const draft = useDraft(draftKey, { title, body: text, doc, promptId }, dirty);
+  const draft = useDraft(draftKey, { title, body: text, doc, promptId, tags }, dirty);
   const prompt = isNew ? props.prompts.find((p) => p.id === promptId) ?? null : null;
   const promptText = isNew ? prompt?.body ?? null : props.promptBody;
   const words = wordCount(text);
@@ -65,16 +68,22 @@ export function EntryEditor(props: Props) {
     if (dirty) return;
     if (!isNew) {
       setTitle(props.initial.title);
+      setTags(props.initial.tags);
       load(props.initial.doc, props.initial.text);
     } else {
       setPromptId(props.initialPromptId);
+      setTags([]);
     }
     const saved = draft.restore();
     if (!saved) return;
     const savedDoc = saved.doc ?? textToDoc(saved.body);
-    const differs = isNew ? saved.body.trim() !== "" : saved.body !== props.initial.text || saved.title !== props.initial.title || JSON.stringify(savedDoc) !== JSON.stringify(props.initial.doc);
+    const savedTags = saved.tags ?? startTags;
+    const differs = isNew
+      ? saved.body.trim() !== ""
+      : saved.body !== props.initial.text || saved.title !== props.initial.title || savedTags.join() !== props.initial.tags.join() || JSON.stringify(savedDoc) !== JSON.stringify(props.initial.doc);
     if (!differs) return;
     setTitle(saved.title);
+    setTags(savedTags);
     load(savedDoc, saved.body);
     if (isNew) setPromptId(saved.promptId);
     setDirty(true);
@@ -97,7 +106,7 @@ export function EntryEditor(props: Props) {
     }
     startTransition(async () => {
       // Editor JSON can contain objects without a normal prototype; send a plain copy to the server.
-      const input = { title, doc: JSON.parse(JSON.stringify(doc)) as DocNode, promptId };
+      const input = { title, doc: JSON.parse(JSON.stringify(doc)) as DocNode, promptId, tags };
       let destination: string;
       if (props.mode === "new") {
         const result = await createEntry(input);
@@ -106,6 +115,7 @@ export function EntryEditor(props: Props) {
         destination = routes.journalEntry(result.data.id);
         // The next new entry starts blank, even though Next.js keeps this page alive.
         setTitle("");
+        setTags([]);
         load(EMPTY, "");
       } else {
         const result = await updateEntry(props.entryId, input);
@@ -198,7 +208,16 @@ export function EntryEditor(props: Props) {
           }}
           maxLength={120}
           placeholder="Title (optional)"
-          className="mb-5 w-full bg-transparent text-[26px] leading-tight font-semibold tracking-[-0.02em] text-ink placeholder:text-faint/70 focus:outline-none sm:text-[30px]"
+          className="mb-3 w-full bg-transparent text-[26px] leading-tight font-semibold tracking-[-0.02em] text-ink placeholder:text-faint/70 focus:outline-none sm:text-[30px]"
+        />
+
+        <TagInput
+          value={tags}
+          suggestions={props.knownTags}
+          onChange={(next) => {
+            setTags(next);
+            setDirty(true);
+          }}
         />
 
         <RichEditor

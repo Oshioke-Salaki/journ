@@ -139,3 +139,20 @@ export async function deleteStep(stepId: string): Promise<ActionResult> {
   refresh(data[0]?.goal_id);
   return ok(undefined, "Step removed");
 }
+
+export async function updateStep(stepId: string, input: StepInput): Promise<ActionResult> {
+  if (!uuid.safeParse(stepId).success) return fail("That step doesn't exist any more.");
+  const parsed = stepSchema.safeParse(input);
+  if (!parsed.success) return invalid(parsed.error);
+  await requireMember();
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("goal_steps")
+    .update({ title: parsed.data.title, due_date: parsed.data.dueDate })
+    .eq("id", stepId)
+    .select("goal_id");
+  if (error) return logFail("update step", error);
+  if (!data.length) return fail("That step doesn't exist any more.");
+  refresh(data[0].goal_id);
+  return ok(undefined, "Step updated");
+}

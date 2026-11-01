@@ -5,11 +5,16 @@ import type { ReactNode } from "react";
 import { Suspense } from "react";
 import { PageContainer, PageHeader } from "@/components/shell/page";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getTotpFactor } from "@/features/auth/mfa-queries";
+import { AppLockSettings } from "@/features/settings/app-lock-settings";
+import { TwoStepSettings } from "@/features/settings/two-step-settings";
 import { Appearance } from "@/features/settings/appearance";
+import { FeedbackForm } from "@/features/feedback/feedback-form";
 import { ChangePasswordForm } from "@/features/settings/change-password-form";
 import { DeleteAccountButton, DownloadDataButton, SignOutButton } from "@/features/settings/data-controls";
 import { PreferencesForm } from "@/features/settings/preferences-form";
 import { ProfileForm } from "@/features/settings/profile-form";
+import { TimezoneForm } from "@/features/settings/timezone-form";
 import { buttonVariants } from "@/components/ui/button";
 import { requireMember } from "@/lib/auth/session";
 import { routes } from "@/lib/routes";
@@ -28,7 +33,7 @@ export default function SettingsPage() {
 }
 
 async function Settings() {
-  const { user, profile } = await requireMember();
+  const [{ user, profile }, factor] = await Promise.all([requireMember(), getTotpFactor()]);
   return (
     <div className="flex flex-col">
       {profile.role === "admin" ? (
@@ -72,8 +77,17 @@ async function Settings() {
           }}
         />
       </Section>
+      <Section id="timezone" title="Time zone" description="When you travel, change it here so “today” means your today.">
+        <TimezoneForm current={profile.timezone} />
+      </Section>
       <Section id="appearance" title="Appearance" description="Saved on this device.">
         <Appearance />
+      </Section>
+      <Section id="two-step" title="Two-step sign-in" description="A code from your phone as well as your password.">
+        <TwoStepSettings factor={factor} recommended={profile.role === "admin"} />
+      </Section>
+      <Section id="app-lock" title="App lock" description="A code that keeps JournApp private on a shared device. Saved on this device only.">
+        <AppLockSettings />
       </Section>
       <Section id="password" title="Password" description="Confirm your current password, then choose a new one. You stay signed in on this device.">
         <ChangePasswordForm />
@@ -84,11 +98,19 @@ async function Settings() {
           <DownloadDataButton />
         </div>
       </Section>
+      <Section id="feedback" title="Send feedback" description="An idea, a problem or a question. It goes straight to the JournApp team.">
+        <FeedbackForm />
+      </Section>
       <Section id="support" title="Support" description="JournApp is not a crisis service. If things feel too heavy, help is close.">
-        <Link href={routes.help} className={buttonVariants({ variant: "outline" })}>
-          <LifeBuoy aria-hidden />
-          Get support now
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link href={routes.help} className={buttonVariants({ variant: "outline" })}>
+            <LifeBuoy aria-hidden />
+            Get support now
+          </Link>
+          <Link href={routes.guide} className={buttonVariants({ variant: "ghost" })}>
+            How JournApp works
+          </Link>
+        </div>
       </Section>
       <Section id="account" title="Account" description={user.email ?? undefined}>
         <SignOutButton />

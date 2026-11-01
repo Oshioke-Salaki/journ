@@ -52,6 +52,7 @@ export async function createEntry(input: EntryInput): Promise<ActionResult<{ id:
       prompt_id: prompt?.id ?? null,
       prompt_body: prompt?.body ?? null,
       title: parsed.data.title,
+      tags: parsed.data.tags,
       body: prepared.body,
       body_doc: prepared.doc as unknown as Json,
       local_date: today,
@@ -78,7 +79,7 @@ export async function updateEntry(entryId: string, input: EntryInput): Promise<A
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("journal_entries")
-    .update({ title: parsed.data.title, body: prepared.body, body_doc: prepared.doc as unknown as Json })
+    .update({ title: parsed.data.title, tags: parsed.data.tags, body: prepared.body, body_doc: prepared.doc as unknown as Json })
     .eq("id", entryId)
     .select("id");
   if (error) {

@@ -8,6 +8,12 @@ check-in with body map · journal with drafts, search, prompted writing · Disco
 the 18+ gate · My Space reports, goals, plans and vision board · Settings with export and deletion ·
 public support page · admin for videos, quotes, prompts and topics · light and dark · installable PWA.
 
+Then, from "everything a member needs": first-week checklist · suggestions after a check-in · missed
+check-ins for 7 days · On this day · month calendar · insights from sleep, movement, water and
+weekdays · journal tags and filters · print or save the journal as PDF · time zone setting and travel
+prompt · app lock · two-step sign-in (enforced in the database) · feedback with an admin inbox ·
+the guide · saved videos and video search · admin team management.
+
 ## Next (before public launch)
 
 - Real content, the welcome video and Mux uploads (client).
@@ -31,5 +37,5 @@ public support page · admin for videos, quotes, prompts and topics · light and
 ## Phase 3
 
 - Native iOS and Android apps with Expo (React Native), on the same Supabase backend.
-- Home-screen widgets, Face ID lock, Apple Health and Google Fit.
+- Home-screen widgets, Face ID unlock (in place of the app lock code), Apple Health and Google Fit.
 - More languages (the profile already stores a language).

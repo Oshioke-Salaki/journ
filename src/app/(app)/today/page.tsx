@@ -8,19 +8,23 @@ import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { moodLabel } from "@/features/check-in/constants";
 import { getCheckIn } from "@/features/check-in/queries";
-import { getPromptForDay, getQuoteForDay } from "@/features/content/queries";
+import { getPromptForDay, getQuoteForDay, getVideos } from "@/features/content/queries";
 import { ZONES } from "@/features/control/constants";
 import { listControlItems } from "@/features/control/queries";
 import { StepList } from "@/features/goals/components/step-list";
 import { nextSteps } from "@/features/goals/queries";
 import { countEntries } from "@/features/journal/queries";
 import { CheckInSummary } from "@/features/today/check-in-summary";
+import { FirstWeek } from "@/features/today/first-week";
 import { InstallCard } from "@/features/today/install-card";
+import { getMemories, getSetupProgress } from "@/features/today/queries";
 import { QuickMood } from "@/features/today/quick-mood";
+import { suggestionsFor } from "@/features/today/suggestions";
+import { TimezoneNudge } from "@/features/today/timezone-nudge";
 import { getTrackerTotals } from "@/features/trackers/queries";
 import { TrackerPanel } from "@/features/trackers/tracker-panel";
 import { firstName, requireMember } from "@/lib/auth/session";
-import { formatDate, localHour, partOfDay } from "@/lib/dates";
+import { addDays, formatDate, localHour, partOfDay, relativeDay } from "@/lib/dates";
 import { cn } from "@/lib/cn";
 import { routes } from "@/lib/routes";
 
@@ -40,7 +44,9 @@ export default function TodayPage() {
 
 async function Today() {
   const { user, profile, today } = await requireMember();
-  const [checkIn, quote, prompt, steps, entriesToday, trackers, thoughts] = await Promise.all([
+  // The first-week checklist shows for a month after onboarding, until done or hidden.
+  const showSetup = !profile.checklist_dismissed_at && Boolean(profile.onboarded_at) && profile.onboarded_at!.slice(0, 10) > addDays(today, -30);
+  const [checkIn, quote, prompt, steps, entriesToday, trackers, thoughts, setup, memories, videos, yesterday] = await Promise.all([
     getCheckIn(today),
     getQuoteForDay(today),
     getPromptForDay(today),
@@ -48,7 +54,13 @@ async function Today() {
     countEntries(today),
     getTrackerTotals(today),
     listControlItems(today),
+    showSetup ? getSetupProgress() : Promise.resolve(null),
+    getMemories(today),
+    getVideos(),
+    getCheckIn(addDays(today, -1)),
   ]);
+  const setupLeft = setup ? Object.values(setup).some((done) => !done) : false;
+  const suggestions = checkIn ? suggestionsFor(checkIn, videos, profile.plan === "premium") : [];
   const sorted = thoughts.filter((t) => t.zone).length;
 
   const name = firstName(profile);
@@ -69,15 +81,71 @@ async function Today() {
         </p>
       </header>
 
+      <TimezoneNudge saved={profile.timezone} />
       <InstallCard />
+      {setup && setupLeft ? <FirstWeek progress={setup} /> : null}
 
-      <section aria-label="Today's check-in" className="rounded-[var(--radius-panel)] bg-raised p-4 sm:p-6 lg:col-span-8 lg:self-start">
-        {checkIn ? (
-          <CheckInSummary checkIn={checkIn} userId={user.id} timeZone={profile.timezone} />
-        ) : (
-          <QuickMood seed={seedFrom(`${user.id}:${today}`)} />
-        )}
-      </section>
+      <div className="flex flex-col gap-4 lg:col-span-8 lg:self-start">
+        <section aria-label="Today's check-in" className="rounded-[var(--radius-panel)] bg-raised p-4 sm:p-6">
+          {checkIn ? (
+            <CheckInSummary checkIn={checkIn} userId={user.id} timeZone={profile.timezone} />
+          ) : (
+            <QuickMood seed={seedFrom(`${user.id}:${today}`)} />
+          )}
+        </section>
+
+        {suggestions.length ? (
+          <section aria-labelledby="for-you-heading" className="flex flex-col gap-4 rounded-[var(--radius-panel)] bg-raised p-5 sm:p-6">
+            <h2 id="for-you-heading" className="text-[17px] font-semibold text-ink">
+              For how you feel
+            </h2>
+            <ul className="grid gap-2 sm:grid-cols-3">
+              {suggestions.map((s) => (
+                <li key={s.key}>
+                  <Link
+                    href={s.href}
+                    className="group flex h-full flex-col gap-2 rounded-[16px] bg-surface p-4 transition-colors hover:bg-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                  >
+                    <span className="text-[13px] text-muted">{s.reason}</span>
+                    <span className="text-[15px] leading-snug font-medium text-ink">{s.title}</span>
+                    <span className="mt-auto inline-flex items-center gap-1 pt-1 text-[14px] font-medium text-accent-ink">
+                      {s.cta}
+                      <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
+        {!yesterday && profile.onboarded_at!.slice(0, 10) < today ? (
+          <Link href={routes.checkInFor(addDays(today, -1))} className="self-start text-[14px] font-medium text-muted hover:text-ink hover:underline">
+            Missed yesterday? Add how it went
+          </Link>
+        ) : null}
+
+        {memories.length ? (
+          <section aria-labelledby="memories-heading" className="flex flex-col gap-4 rounded-[var(--radius-panel)] bg-sand p-5 sm:p-6">
+            <h2 id="memories-heading" className="text-[17px] font-semibold text-ink">
+              On this day
+            </h2>
+            <ul className="flex flex-col gap-2">
+              {memories.map((m) => (
+                <li key={m.id}>
+                  <Link href={routes.journalEntry(m.id)} className="flex flex-col gap-1 rounded-[16px] bg-surface p-4 transition-colors hover:bg-active">
+                    <span className="text-[13px] text-muted">
+                      {m.ago}, {relativeDay(m.local_date, today)}
+                    </span>
+                    {m.title || m.prompt_body ? <span className="text-[15px] font-medium text-ink">{m.title ?? m.prompt_body}</span> : null}
+                    <span className="line-clamp-3 font-serif text-[16px] leading-snug text-ink">{m.body}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+      </div>
 
       <div className="flex flex-col gap-4 lg:col-span-4">
       <section aria-labelledby="quote-heading" className="flex flex-col gap-6 rounded-[var(--radius-panel)] bg-sand p-6">

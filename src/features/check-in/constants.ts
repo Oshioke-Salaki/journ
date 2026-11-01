@@ -1,3 +1,14 @@
+/** How many days back a missed check-in can still be added. */
+export const BACKFILL_DAYS = 7;
+
+/** Whether `date` is today or one of the last BACKFILL_DAYS days (dates are YYYY-MM-DD). */
+export function canCheckInFor(date: string, today: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date > today) return false;
+  const earliest = new Date(`${today}T12:00:00Z`);
+  earliest.setUTCDate(earliest.getUTCDate() - BACKFILL_DAYS);
+  return date >= earliest.toISOString().slice(0, 10);
+}
+
 /** The words of the check-in. Order matters: index 0 is the lowest value (1). */
 
 export const MOODS = [

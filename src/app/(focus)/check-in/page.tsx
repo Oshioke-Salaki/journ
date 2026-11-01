@@ -3,9 +3,10 @@ import { Suspense } from "react";
 import { seedFrom } from "@/components/brand/landscape";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CheckInFlow, type CheckInDraft } from "@/features/check-in/components/check-in-flow";
-import { FEELINGS, type Feeling } from "@/features/check-in/constants";
+import { canCheckInFor, FEELINGS, type Feeling } from "@/features/check-in/constants";
 import { getCheckIn } from "@/features/check-in/queries";
 import { requireMember } from "@/lib/auth/session";
+import { formatDate, relativeDay } from "@/lib/dates";
 
 export const metadata: Metadata = { title: "Check in" };
 
@@ -21,7 +22,10 @@ export default function CheckInPage({ searchParams }: PageProps<"/check-in">) {
 
 async function CheckIn({ searchParams }: Pick<PageProps<"/check-in">, "searchParams">) {
   const [{ user, today }, params] = await Promise.all([requireMember(), searchParams]);
-  const existing = await getCheckIn(today);
+  // A recent missed day (?date=YYYY-MM-DD); anything else means today.
+  const wanted = typeof params.date === "string" && params.date !== today && canCheckInFor(params.date, today) ? params.date : null;
+  const day = wanted ?? today;
+  const existing = await getCheckIn(day);
   const moodParam = Number(params.mood);
   const presetMood = Number.isInteger(moodParam) && moodParam >= 1 && moodParam <= 5 ? moodParam : null;
 
@@ -37,7 +41,14 @@ async function CheckIn({ searchParams }: Pick<PageProps<"/check-in">, "searchPar
       }
     : { mood: presetMood, energy: null, efficiency: null, selfSatisfaction: null, body: [], feelings: [], note: "" };
 
-  return <CheckInFlow initial={initial} isUpdate={Boolean(existing)} seed={seedFrom(`${user.id}:${today}`)} />;
+  return (
+    <CheckInFlow
+      initial={initial}
+      isUpdate={Boolean(existing)}
+      seed={seedFrom(`${user.id}:${day}`)}
+      pastDay={wanted ? { date: wanted, label: relativeDay(wanted, today), long: formatDate(wanted, { weekday: "long", day: "numeric", month: "long" }) } : null}
+    />
+  );
 }
 
 function CheckInSkeleton() {

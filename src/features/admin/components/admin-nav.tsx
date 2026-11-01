@@ -11,6 +11,8 @@ const ITEMS = [
   { href: "/admin/quotes", label: "Quotes" },
   { href: "/admin/prompts", label: "Prompts" },
   { href: "/admin/topics", label: "Topics" },
+  { href: "/admin/feedback", label: "Inbox" },
+  { href: "/admin/team", label: "Team" },
 ];
 
 export function AdminNav() {

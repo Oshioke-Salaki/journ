@@ -47,6 +47,17 @@ async function Entry({ params }: Pick<PageProps<"/journal/[id]">, "params">) {
       <h1 className="mt-3 text-[28px] leading-[1.15] font-semibold tracking-[-0.02em] text-ink sm:text-[34px]">
         {entry.title ?? (entry.prompt_body ? "A prompted entry" : "Untitled entry")}
       </h1>
+      {entry.tags.length ? (
+        <ul aria-label="Tags" className="mt-4 flex flex-wrap gap-1.5">
+          {entry.tags.map((tag) => (
+            <li key={tag}>
+              <Link href={routes.journalTag(tag)} className="inline-flex h-8 items-center rounded-full bg-raised px-3 text-[14px] text-ink hover:bg-active">
+                #{tag}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : null}
       {entry.prompt_body ? (
         <p className="mt-6 rounded-[18px] bg-sand px-5 py-4 font-serif text-[18px] leading-snug text-ink italic">{entry.prompt_body}</p>
       ) : null}

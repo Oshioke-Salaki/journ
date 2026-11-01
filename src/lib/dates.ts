@@ -84,3 +84,56 @@ export function relativeDay(date: IsoDate, today: IsoDate) {
   const sameYear = date.slice(0, 4) === today.slice(0, 4);
   return formatDate(date, sameYear ? { day: "numeric", month: "short" } : { day: "numeric", month: "short", year: "numeric" });
 }
+
+/** The device's time zone, or null when the browser does not say. Client only. */
+export function deviceTimeZone(): string | null {
+  try {
+    const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return zone && isValidTimeZone(zone) ? zone : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Whether two zones show the same wall-clock time at `now` (e.g. Nairobi and Addis Ababa). */
+export function sameWallClock(a: string, b: string, now: Date = new Date()) {
+  const fmt = (zone: string) =>
+    new Intl.DateTimeFormat("en-GB", { timeZone: zone, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(now);
+  return isValidTimeZone(a) && isValidTimeZone(b) && fmt(a) === fmt(b);
+}
+
+/** "Africa/Nairobi" as "Nairobi (Africa)"; "UTC" stays. */
+export function timeZoneLabel(zone: string) {
+  const parts = zone.split("/");
+  if (parts.length < 2) return zone;
+  return `${parts.slice(1).join(" / ").replace(/_/g, " ")} (${parts[0].replace(/_/g, " ")})`;
+}
+
+/** The calendar of a month (YYYY-MM): its first and last date, and the weeks Monday to Sunday. */
+export function monthGrid(month: string) {
+  const first = `${month}-01`;
+  const start = fromIsoDate(first);
+  const last = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 0)).toISOString().slice(0, 10);
+  const lead = (start.getUTCDay() + 6) % 7; // Monday first
+  const cells: (IsoDate | null)[] = [...Array<null>(lead).fill(null), ...dateRange(first, last)];
+  while (cells.length % 7) cells.push(null);
+  const weeks: (IsoDate | null)[][] = [];
+  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+  return { first, last, weeks };
+}
+
+/** The month before or after `month` (YYYY-MM). */
+export function shiftMonth(month: string, by: number) {
+  const d = fromIsoDate(`${month}-01`);
+  d.setUTCMonth(d.getUTCMonth() + by);
+  return d.toISOString().slice(0, 7);
+}
+
+/** The same day of the month `n` months earlier, clamped to the month's last day (31 Mar → 28 Feb). */
+export function monthsBefore(date: string, n: number) {
+  const [y, m, d] = date.split("-").map(Number);
+  const target = new Date(Date.UTC(y, m - 1 - n, 1));
+  const last = new Date(Date.UTC(target.getUTCFullYear(), target.getUTCMonth() + 1, 0)).getUTCDate();
+  target.setUTCDate(Math.min(d, last));
+  return target.toISOString().slice(0, 10);
+}

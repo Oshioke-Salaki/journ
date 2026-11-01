@@ -13,18 +13,26 @@ import type { Tables } from "@/lib/supabase/database.types";
  * These read cookies, so call them inside a <Suspense> boundary (pages) or from an action.
  */
 
-export type SessionUser = { id: string; email: string | null };
+export type SessionUser = { id: string; email: string | null; needsSecondStep: boolean };
 
 export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getClaims();
   if (error || !data?.claims?.sub) return null;
-  return { id: data.claims.sub, email: (data.claims.email as string | undefined) ?? null };
+  // A member with an authenticator app signed in with only a password so far (aal1 of aal2).
+  let needsSecondStep = false;
+  if (data.claims.aal !== "aal2") {
+    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    needsSecondStep = aal?.nextLevel === "aal2" && aal.currentLevel !== "aal2";
+  }
+  return { id: data.claims.sub, email: (data.claims.email as string | undefined) ?? null, needsSecondStep };
 });
 
+/** A signed-in member who has passed two-step sign-in if they use it. */
 export async function requireUser(): Promise<SessionUser> {
   const user = await getSessionUser();
   if (!user) redirect(routes.signIn);
+  if (user.needsSecondStep) redirect(routes.verify);
   return user;
 }
 

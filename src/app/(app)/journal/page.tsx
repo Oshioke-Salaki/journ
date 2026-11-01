@@ -1,4 +1,4 @@
-import { PenLine } from "lucide-react";
+import { PenLine, Printer, X } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -7,10 +7,11 @@ import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/states";
 import { JournalSearch } from "@/features/journal/components/journal-search";
-import { listEntries, type EntrySummary } from "@/features/journal/queries";
+import { listEntries, listTags, type EntrySummary } from "@/features/journal/queries";
 import { requireMember } from "@/lib/auth/session";
 import { formatDate, relativeDay } from "@/lib/dates";
 import { routes } from "@/lib/routes";
+import { cn } from "@/lib/cn";
 
 export const metadata: Metadata = { title: "Journal" };
 
@@ -21,10 +22,16 @@ export default function JournalPage({ searchParams }: PageProps<"/journal">) {
         title="Journal"
         description="Everything you have written, newest first. Only you can see it."
         actions={
-          <Link href={routes.newJournalEntry} className={buttonVariants({ size: "md" })}>
-            <PenLine aria-hidden />
-            New entry
-          </Link>
+          <>
+            <Link href={routes.journalPrint()} className={buttonVariants({ variant: "secondary", size: "md" })}>
+              <Printer aria-hidden />
+              <span className="max-sm:sr-only">Print</span>
+            </Link>
+            <Link href={routes.newJournalEntry} className={buttonVariants({ size: "md" })}>
+              <PenLine aria-hidden />
+              New entry
+            </Link>
+          </>
         }
       />
       <Suspense fallback={<EntryListSkeleton />}>
@@ -37,14 +44,21 @@ export default function JournalPage({ searchParams }: PageProps<"/journal">) {
 async function Entries({ searchParams }: Pick<PageProps<"/journal">, "searchParams">) {
   const [{ today }, params] = await Promise.all([requireMember(), searchParams]);
   const q = typeof params.q === "string" ? params.q : "";
-  const entries = await listEntries(200, q);
+  const tag = typeof params.tag === "string" ? params.tag.slice(0, 30) : "";
+  const [entries, tags] = await Promise.all([listEntries(200, q, tag || undefined), listTags()]);
+  const count = entries.length === 1 ? "1 entry" : `${entries.length} entries`;
 
-  if (q) {
+  if (q || tag) {
+    const what = [q ? `matching “${q}”` : null, tag ? `tagged #${tag}` : null].filter(Boolean).join(" and ");
+    const none = [q ? `Nothing matches “${q}”` : "Nothing", tag ? `tagged #${tag}` : null].filter(Boolean).join(" ");
     return (
       <>
-        <JournalSearch initial={q} />
-        {entries.length ? <EntryGroups entries={entries} today={today} label={`${entries.length === 1 ? "1 entry" : `${entries.length} entries`} matching “${q}”`} /> : (
-          <EmptyState title={`Nothing matches “${q}”`}>Try a different word, or clear the search to see everything.</EmptyState>
+        <JournalSearch initial={q} tag={tag} />
+        <TagFilter tags={tags} active={tag} q={q} />
+        {entries.length ? (
+          <EntryGroups entries={entries} today={today} label={`${count} ${what}`} />
+        ) : (
+          <EmptyState title={none}>Try a different word or tag, or clear the filters to see everything.</EmptyState>
         )}
       </>
     );
@@ -68,7 +82,8 @@ async function Entries({ searchParams }: Pick<PageProps<"/journal">, "searchPara
   return (
     <>
       <JournalSearch initial="" />
-      <EntryGroups entries={entries} today={today} label={entries.length === 1 ? "1 entry" : `${entries.length} entries`} />
+      <TagFilter tags={tags} active="" q="" />
+      <EntryGroups entries={entries} today={today} label={count} />
     </>
   );
 }
@@ -114,7 +129,41 @@ function EntryRow({ entry, today }: { entry: EntrySummary; today: string }) {
         <p className="shrink-0 text-[13px] text-muted">{relativeDay(entry.local_date, today)}</p>
       </div>
       {excerpt ? <p className="line-clamp-2 font-serif text-[16px] leading-relaxed text-muted">{excerpt}</p> : null}
+      {entry.tags.length ? <p className="mt-1 truncate text-[13px] text-muted">{entry.tags.map((t) => `#${t}`).join("  ")}</p> : null}
     </Link>
+  );
+}
+
+/** The member's tags as filters. Tapping the active one clears it. */
+function TagFilter({ tags, active, q }: { tags: { tag: string; n: number }[]; active: string; q: string }) {
+  if (!tags.length) return null;
+  const href = (tag: string) => {
+    const params = new URLSearchParams();
+    if (q) params.set("q", q);
+    if (tag) params.set("tag", tag);
+    const query = params.toString();
+    return query ? `${routes.journal}?${query}` : routes.journal;
+  };
+  return (
+    <nav aria-label="Filter by tag" className="scrollbar-none -mx-4 -mt-4 mb-8 flex gap-1.5 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
+      {tags.slice(0, 20).map(({ tag, n }) => {
+        const on = tag === active;
+        return (
+          <Link
+            key={tag}
+            href={href(on ? "" : tag)}
+            aria-current={on ? "true" : undefined}
+            className={cn(
+              "inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[14px] transition-colors",
+              on ? "bg-primary text-on-primary" : "bg-raised text-ink hover:bg-active",
+            )}
+          >
+            #{tag}
+            {on ? <X className="size-3.5" aria-label="Clear" /> : <span className="num text-[12px] text-muted">{n}</span>}
+          </Link>
+        );
+      })}
+    </nav>
   );
 }
 

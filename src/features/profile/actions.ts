@@ -91,8 +91,11 @@ export async function updatePreferences(input: PreferencesInput): Promise<Action
 }
 
 export async function updateTimezone(timezone: string): Promise<ActionResult> {
-  if (!isValidTimeZone(timezone)) return fail("That timezone isn't recognised.");
-  return updateOwnProfile({ timezone });
+  if (!isValidTimeZone(timezone)) return fail("That time zone isn't recognised.");
+  const result = await updateOwnProfile({ timezone });
+  if (!result.ok) return result;
+  revalidatePath("/", "layout");
+  return ok(undefined, "Time zone updated");
 }
 
 export async function confirmMatureContent(): Promise<ActionResult> {

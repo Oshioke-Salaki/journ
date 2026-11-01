@@ -6,7 +6,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { Spinner } from "@/components/ui/spinner";
 
 /** Searches as you type (after a short pause), keeping the query in the URL. */
-export function JournalSearch({ initial }: { initial: string }) {
+export function JournalSearch({ initial, tag = "" }: { initial: string; tag?: string }) {
   const router = useRouter();
   const pathname = usePathname();
   const [value, setValue] = useState(initial);
@@ -19,8 +19,11 @@ export function JournalSearch({ initial }: { initial: string }) {
     setValue(next);
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => {
-      const q = next.trim();
-      startTransition(() => router.replace(q ? `${pathname}?q=${encodeURIComponent(q)}` : pathname, { scroll: false }));
+      const params = new URLSearchParams();
+      if (next.trim()) params.set("q", next.trim());
+      if (tag) params.set("tag", tag);
+      const query = params.toString();
+      startTransition(() => router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false }));
     }, 280);
   };
 

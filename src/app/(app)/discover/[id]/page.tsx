@@ -9,6 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatDuration, getTopic, getVideo, getVideos } from "@/features/content/queries";
 import { KIND_LABEL, VideoCard } from "@/features/discover/video-card";
 import { VideoPoster } from "@/features/discover/video-poster";
+import { listSavedVideoIds } from "@/features/discover/queries";
+import { SaveVideoButton } from "@/features/discover/save-video-button";
 import { getProfile } from "@/lib/auth/session";
 import { cn } from "@/lib/cn";
 import { routes } from "@/lib/routes";
@@ -33,10 +35,11 @@ async function VideoDetail({ params }: Pick<PageProps<"/discover/[id]">, "params
   const { id } = await params;
   const video = await getVideo(id);
   if (!video) notFound();
-  const [topic, all, profile] = await Promise.all([
+  const [topic, all, profile, saved] = await Promise.all([
     video.topic_slug ? getTopic(video.topic_slug) : Promise.resolve(null),
     getVideos(),
     getProfile(),
+    listSavedVideoIds(),
   ]);
   const locked = video.tier === "premium" && profile?.plan !== "premium";
   const related = all.filter((v) => v.id !== video.id && v.topic_slug === video.topic_slug).slice(0, 3);
@@ -86,7 +89,8 @@ async function VideoDetail({ params }: Pick<PageProps<"/discover/[id]">, "params
           </p>
           <h1 className="text-[28px] leading-[1.15] font-semibold tracking-[-0.02em] text-ink sm:text-[34px]">{video.title}</h1>
           <p className="max-w-[62ch] text-[17px] leading-relaxed text-ink">{video.description}</p>
-          <div className="mt-3">
+          <div className="mt-3 flex flex-wrap gap-2">
+            <SaveVideoButton videoId={video.id} saved={saved.includes(video.id)} />
             <Link href={routes.newJournalEntry} className={buttonVariants({ variant: "secondary" })}>
               <PenLine aria-hidden />
               Write about what you noticed

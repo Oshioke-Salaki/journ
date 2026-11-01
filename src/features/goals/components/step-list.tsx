@@ -7,12 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
 import { formatDate, relativeDay } from "@/lib/dates";
-import { notify } from "@/lib/notify";
-import { addStep, deleteStep, toggleStep } from "../actions";
+import { notify, toastResult } from "@/lib/notify";
+import { addStep, deleteStep, toggleStep, updateStep } from "../actions";
 
 type StepView = { id: string; title: string; due_date: string | null; done_at: string | null; pending?: boolean };
 
 type Change =
+  | { type: "edit"; id: string; title: string; due_date: string | null }
   | { type: "toggle"; id: string; done: boolean }
   | { type: "add"; step: StepView }
   | { type: "remove"; id: string };
@@ -21,11 +22,13 @@ export function StepList({ goalId, steps, today, editable = true }: { goalId: st
   const reduce = useReducedMotion();
   const [, startTransition] = useTransition();
   const [optimistic, apply] = useOptimistic(steps, (state: StepView[], change: Change) => {
+    if (change.type === "edit") return state.map((s) => (s.id === change.id ? { ...s, title: change.title, due_date: change.due_date } : s));
     if (change.type === "toggle") return state.map((s) => (s.id === change.id ? { ...s, done_at: change.done ? new Date().toISOString() : null } : s));
     // Once the saved step arrives from the server, the placeholder for it goes.
     if (change.type === "add") return state.some((s) => !s.pending && s.title === change.step.title) ? state : [...state, change.step];
     return state.filter((s) => s.id !== change.id);
   });
+  const [editing, setEditing] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [dueDate, setDueDate] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -37,6 +40,16 @@ export function StepList({ goalId, steps, today, editable = true }: { goalId: st
       const result = await toggleStep(step.id, done);
       if (!result.ok) notify.error(result.error);
     });
+
+  const saveEdit = (step: StepView, nextTitle: string, nextDate: string) => {
+    const value = nextTitle.trim();
+    setEditing(null);
+    if (!value || (value === step.title && (nextDate || null) === step.due_date)) return;
+    startTransition(async () => {
+      apply({ type: "edit", id: step.id, title: value, due_date: nextDate || null });
+      toastResult(await updateStep(step.id, { title: value, dueDate: nextDate }));
+    });
+  };
 
   const remove = (step: StepView) =>
     startTransition(async () => {
@@ -108,8 +121,21 @@ export function StepList({ goalId, steps, today, editable = true }: { goalId: st
                     </motion.span>
                   </button>
                   <div className="min-w-0 flex-1">
-                    <p className={cn("text-[15px] transition-colors", isDone ? "text-muted line-through decoration-muted/60" : "text-ink")}>{step.title}</p>
-                    {step.due_date ? (
+                    {editing === step.id ? (
+                      <StepEditor step={step} onDone={(t, d) => saveEdit(step, t, d)} onCancel={() => setEditing(null)} />
+                    ) : editable && !step.pending ? (
+                      <button
+                        type="button"
+                        onClick={() => setEditing(step.id)}
+                        aria-label={`Edit step: ${step.title}`}
+                        className={cn("block w-full text-left text-[15px] transition-colors hover:underline hover:decoration-control hover:underline-offset-4", isDone ? "text-muted line-through decoration-muted/60" : "text-ink")}
+                      >
+                        {step.title}
+                      </button>
+                    ) : (
+                      <p className={cn("text-[15px] transition-colors", isDone ? "text-muted line-through decoration-muted/60" : "text-ink")}>{step.title}</p>
+                    )}
+                    {step.due_date && editing !== step.id ? (
                       <p className={cn("text-[13px]", overdue ? "font-medium text-negative" : "text-muted")}>
                         {overdue ? `Was due ${formatDate(step.due_date, { day: "numeric", month: "short" })}` : relativeDay(step.due_date, today)}
                       </p>
@@ -150,5 +176,31 @@ export function StepList({ goalId, steps, today, editable = true }: { goalId: st
         </form>
       ) : null}
     </div>
+  );
+}
+
+function StepEditor({ step, onDone, onCancel }: { step: StepView; onDone: (title: string, date: string) => void; onCancel: () => void }) {
+  const [title, setTitle] = useState(step.title);
+  const [date, setDate] = useState(step.due_date ?? "");
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        onDone(title, date);
+      }}
+      onKeyDown={(e) => e.key === "Escape" && onCancel()}
+      className="flex flex-col gap-2 py-1 sm:flex-row"
+    >
+      <Input value={title} onChange={(e) => setTitle(e.target.value)} aria-label="Step" maxLength={160} autoFocus className="h-10 flex-1" />
+      <div className="flex gap-2">
+        <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} aria-label="Step date" className="h-10 sm:w-[160px]" />
+        <Button type="submit" size="sm" className="h-10">
+          Save
+        </Button>
+        <Button type="button" variant="ghost" size="sm" className="h-10" onClick={onCancel}>
+          Cancel
+        </Button>
+      </div>
+    </form>
   );
 }

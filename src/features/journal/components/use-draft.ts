@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 
 import type { DocNode } from "../rich/document";
 
-export type Draft = { title: string; body: string; doc?: DocNode; promptId: string | null; savedAt: number };
+export type Draft = { title: string; body: string; doc?: DocNode; promptId: string | null; tags?: string[]; savedAt: number };
 
 const KEY_PREFIX = "journapp:draft:";
 
@@ -45,7 +45,7 @@ export function useDraft(key: string, value: Omit<Draft, "savedAt">, enabled: bo
     return () => {
       if (timer.current) clearTimeout(timer.current);
     };
-  }, [key, value.title, value.body, value.doc, value.promptId, enabled]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [key, value.title, value.body, value.doc, value.promptId, value.tags?.join(","), enabled]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return {
     restore: () => read(key),

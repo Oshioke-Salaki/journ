@@ -7,6 +7,7 @@ import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogTrigger 
 import { Input } from "@/components/ui/input";
 import { signOut } from "@/features/auth/actions";
 import { clearAllDrafts } from "@/features/journal/components/use-draft";
+import { removeLock } from "@/lib/app-lock";
 import { notify } from "@/lib/notify";
 import { deleteAccount, exportMyData } from "./actions";
 
@@ -43,6 +44,7 @@ export function SignOutButton() {
           const result = await signOut();
           if (!result.ok) return void notify.error(result.error);
           clearAllDrafts();
+          removeLock();
           window.location.assign(result.data.next);
         })
       }
@@ -64,6 +66,7 @@ export function DeleteAccountButton() {
       const result = await deleteAccount(word);
       if (!result.ok) return void notify.error(result.error);
       clearAllDrafts();
+      removeLock();
       window.location.assign(result.data.next);
     });
 

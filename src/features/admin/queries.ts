@@ -12,6 +12,7 @@ export type AdminStats = {
   check_ins_7d: number;
   entries_7d: number;
   goals_active: number;
+  feedback_new: number;
   signups_by_day: { day: string; n: number }[];
 };
 
@@ -53,6 +54,20 @@ export async function adminVideo(id: string) {
 export async function adminTopics() {
   const supabase = await createClient();
   const { data, error } = await supabase.from("topics").select("*").order("sort");
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function adminTeam() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_list_admins");
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function adminFeedback(status: "new" | "done" | null) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_list_feedback", status ? { only_status: status } : {});
   if (error) throw new Error(error.message);
   return data;
 }

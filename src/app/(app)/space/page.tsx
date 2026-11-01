@@ -1,4 +1,4 @@
-import { ArrowRight, Plus } from "lucide-react";
+import { ArrowRight, BookOpen, CalendarDays, CircleDot, ImageIcon, Plus, Target } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -6,14 +6,15 @@ import { PageContainer, PageHeader } from "@/components/shell/page";
 import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/states";
-import { getRecentCheckIns } from "@/features/check-in/queries";
+import { getCheckInsBetween, getRecentCheckIns } from "@/features/check-in/queries";
 import { GoalCard } from "@/features/goals/components/goal-card";
 import { listGoals, upcomingSteps } from "@/features/goals/queries";
-import { countEntries } from "@/features/journal/queries";
+import { countEntries, listEntries } from "@/features/journal/queries";
 import { DayStrip } from "@/features/reports/day-strip";
+import { findInsights, type InsightDay } from "@/features/reports/insights";
 import { MoodChart } from "@/features/reports/mood-chart";
 import { summarise } from "@/features/reports/summary";
-import { getTrackerAverages } from "@/features/trackers/queries";
+import { getTrackerAverages, getTrackerDaily } from "@/features/trackers/queries";
 import { formatTracker, TRACKERS } from "@/features/trackers/constants";
 import { listVisionItems } from "@/features/vision/queries";
 import { requireMember } from "@/lib/auth/session";
@@ -24,6 +25,7 @@ import { routes } from "@/lib/routes";
 export const metadata: Metadata = { title: "My Space" };
 
 const DAYS = 30;
+const INSIGHT_DAYS = 90;
 
 export default function SpacePage() {
   return (
@@ -38,6 +40,20 @@ export default function SpacePage() {
           </Link>
         }
       />
+      <nav aria-label="My Space shortcuts" className="scrollbar-none -mx-4 -mt-4 mb-6 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0 lg:-mt-6 lg:mb-8">
+        {[
+          { href: routes.journal, label: "My journal", icon: BookOpen },
+          { href: routes.calendar(), label: "Calendar", icon: CalendarDays },
+          { href: routes.control, label: "What can I control?", icon: CircleDot },
+          { href: routes.goals, label: "My goals", icon: Target },
+          { href: routes.vision, label: "Vision board", icon: ImageIcon },
+        ].map(({ href, label, icon: Icon }) => (
+          <Link key={href} href={href} className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full bg-raised px-4 text-[14px] font-medium text-ink transition-colors hover:bg-active active:scale-[0.97]">
+            <Icon className="size-4 text-muted" aria-hidden />
+            {label}
+          </Link>
+        ))}
+      </nav>
       <Suspense fallback={<SpaceSkeleton />}>
         <Space />
       </Suspense>
@@ -47,14 +63,23 @@ export default function SpacePage() {
 
 async function Space() {
   const { user, today } = await requireMember();
-  const [checkIns, goals, plans, entries, habits, vision] = await Promise.all([
+  const [checkIns, goals, plans, entries, habits, vision, recent, longCheckIns, tracked] = await Promise.all([
     getRecentCheckIns(today, DAYS),
     listGoals(),
     upcomingSteps(6),
     countEntries(addDays(today, -(DAYS - 1))),
     getTrackerAverages(addDays(today, -(DAYS - 1)), today),
     listVisionItems(),
+    listEntries(3),
+    getCheckInsBetween(addDays(today, -(INSIGHT_DAYS - 1)), today),
+    getTrackerDaily(addDays(today, -(INSIGHT_DAYS - 1)), today),
   ]);
+  const insights = findInsights(
+    longCheckIns.map((c): InsightDay => {
+      const t = tracked.get(c.local_date) ?? {};
+      return { date: c.local_date, mood: c.mood, energy: c.energy, feelings: c.feelings, body: c.body, sleep: t.sleep, movement: t.movement, water: t.water };
+    }),
+  );
   const report = summarise(checkIns, today, DAYS);
   const active = goals.filter((g) => g.status === "active");
   const stepsDone = goals.flatMap((g) => g.goal_steps).filter((s) => s.done_at && s.done_at.slice(0, 10) >= addDays(today, -(DAYS - 1))).length;
@@ -75,7 +100,9 @@ async function Space() {
           <h2 id="report-heading" className="text-[17px] font-semibold text-ink">
             My reports
           </h2>
-          <p className="text-[14px] text-muted">Last {DAYS} days</p>
+          <Link href={routes.calendar()} className="text-[14px] font-medium text-accent-ink hover:underline">
+            Month view
+          </Link>
         </div>
         <DayStrip days={report.series.slice(-14)} userId={user.id} today={today} />
         {report.daysCheckedIn ? (
@@ -121,7 +148,27 @@ async function Space() {
         </div>
       </section>
 
-
+      <section aria-labelledby="insights-heading" className="flex flex-col gap-4 rounded-[var(--radius-panel)] bg-sand p-5 sm:p-6 lg:col-span-12">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 id="insights-heading" className="text-[17px] font-semibold text-ink">
+            What your days are telling you
+          </h2>
+          <p className="text-[14px] text-muted">Last {INSIGHT_DAYS} days</p>
+        </div>
+        {insights.length ? (
+          <ul className="grid gap-2 md:grid-cols-2">
+            {insights.map((i) => (
+              <li key={i.key} className="rounded-[16px] bg-surface px-4 py-3.5 font-serif text-[17px] leading-snug text-ink">
+                {i.text}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-[15px] text-muted">
+            Patterns show up here once there is enough to compare: about two weeks of check-ins, plus sleep, water and movement on Today. Nothing is guessed; each one is worked out from your own days.
+          </p>
+        )}
+      </section>
 
       <section aria-labelledby="goals-heading" className="flex flex-col gap-5 rounded-[var(--radius-panel)] bg-raised p-5 sm:p-6 lg:col-span-7">
         <div className="flex items-baseline justify-between">
@@ -184,6 +231,41 @@ async function Space() {
           All goals and steps
           <ArrowRight className="size-4" aria-hidden />
         </Link>
+      </section>
+
+      <section aria-labelledby="journal-heading" className="flex flex-col gap-5 rounded-[var(--radius-panel)] bg-raised p-5 sm:p-6 lg:col-span-12">
+        <div className="flex items-baseline justify-between">
+          <h2 id="journal-heading" className="text-[17px] font-semibold text-ink">
+            My journal
+          </h2>
+          <Link href={routes.journal} className="text-[14px] font-medium text-accent-ink hover:underline">
+            View all
+          </Link>
+        </div>
+        {recent.length ? (
+          <ul className="grid gap-3 md:grid-cols-3">
+            {recent.map((e) => (
+              <li key={e.id}>
+                <Link href={routes.journalEntry(e.id)} className="flex h-full flex-col gap-1.5 rounded-[16px] bg-surface p-4 transition-colors hover:bg-active">
+                  <span className="text-[13px] text-muted">{relativeDay(e.local_date, today)}</span>
+                  <span className="line-clamp-1 text-[16px] font-medium text-ink">{e.title ?? e.prompt_body ?? e.body.split("\n")[0]}</span>
+                  <span className="line-clamp-2 font-serif text-[15px] leading-relaxed text-muted">{e.body}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <EmptyState
+            title="No entries yet"
+            action={
+              <Link href={routes.newJournalEntry} className={buttonVariants({ variant: "secondary", size: "sm" })}>
+                Write your first entry
+              </Link>
+            }
+          >
+            Everything you write is kept here, newest first, and only you can read it.
+          </EmptyState>
+        )}
       </section>
 
       <section aria-labelledby="vision-heading" className="flex flex-col gap-5 rounded-[var(--radius-panel)] bg-raised p-5 sm:p-6 lg:col-span-12">
@@ -262,6 +344,7 @@ function SpaceSkeleton() {
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
       <Skeleton className="h-[104px] rounded-[var(--radius-panel)] lg:col-span-12" />
       <Skeleton className="h-[560px] rounded-[var(--radius-panel)] lg:col-span-12" />
+      <Skeleton className="h-[140px] rounded-[var(--radius-panel)] lg:col-span-12" />
       <Skeleton className="h-[300px] rounded-[var(--radius-panel)] lg:col-span-7" />
       <Skeleton className="h-[300px] rounded-[var(--radius-panel)] lg:col-span-5" />
     </div>

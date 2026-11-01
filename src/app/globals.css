@@ -357,3 +357,8 @@
   from { opacity: 0; transform: translateY(4px) scale(0.97); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
+
+/* App lock: everything but the lock screen stays hidden until the code is entered. */
+html[data-locked] body > :not([data-app-lock]) {
+  visibility: hidden;
+}
